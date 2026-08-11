@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BATTLOG デザイン最終ラフ（全画面）</title>
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", sans-serif; background: #ececec; color: #222; padding-bottom: 80px; }
+  .intro { max-width: 720px; margin: 0 auto; padding: 28px 20px 8px; }
+  .intro h1 { font-size: 20px; font-weight: 800; margin-bottom: 8px; }
+  .intro p { font-size: 13px; line-height: 1.7; color: #555; }
+  nav.jump { position: sticky; top: 0; z-index: 50; background: rgba(255,255,255,.92); backdrop-filter: blur(8px); border-bottom: 1px solid #ddd; display: flex; gap: 6px; padding: 10px 12px; justify-content: center; flex-wrap: wrap; }
+  nav.jump a { text-decoration: none; font-size: 12.5px; font-weight: 700; color: #333; padding: 6px 12px; border-radius: 8px; border: 1px solid #ccc; background: #fff; }
+  .case { max-width: 720px; margin: 0 auto; padding: 30px 16px 6px; }
+  .case > .label { margin-bottom: 12px; }
+  .case > .label .tag { display: inline-block; font-size: 12px; font-weight: 800; color: #fff; background: #222; border-radius: 6px; padding: 3px 10px; margin-bottom: 6px; }
+  .case > .label h2 { font-size: 16px; font-weight: 800; }
+  .case > .label p { font-size: 12.5px; color: #666; line-height: 1.6; margin-top: 3px; }
+  .phone { max-width: 400px; margin: 0 auto; border-radius: 24px; overflow: hidden; box-shadow: 0 12px 40px rgba(0,0,0,.25); border: 1px solid rgba(0,0,0,.15); }
+  .foot { max-width: 720px; margin: 30px auto 0; padding: 0 20px; font-size: 13px; color: #555; line-height: 1.8; }
+
+  /* ================= BATTLOG theme ================= */
+  .bl { background: #07090f; color: #dfe8f4; padding: 18px 14px 26px; }
+  .bl .hd { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; }
+  .bl .hd h1 { font-size: 17px; font-weight: 900; letter-spacing: .08em; color: #fff; }
+  .bl .hd h1 span { color: #23d3ee; text-shadow: 0 0 12px rgba(35,211,238,.6); }
+  .bl .hd .n { font-size: 11px; color: #5b6b82; font-weight: 700; letter-spacing: .1em; font-variant-numeric: tabular-nums; }
+  .bl .tabs { display: grid; grid-template-columns: repeat(5,1fr); gap: 3px; margin-bottom: 16px; }
+  .bl .tabs b { font-size: 10.5px; font-weight: 800; text-align: center; padding: 9px 0; letter-spacing: .05em; color: #5b6b82; background: #0d1320; clip-path: polygon(6px 0,100% 0,calc(100% - 6px) 100%,0 100%); }
+  .bl .tabs b.on { color: #07090f; background: #23d3ee; }
+  .bl .card { background: #0e1420; border: 1px solid #1c2740; padding: 13px; margin-bottom: 10px; }
+  .bl .ct { font-size: 11px; font-weight: 800; letter-spacing: .12em; color: #5b6b82; margin-bottom: 11px; }
+  .bl .ct .sub { font-weight: 700; letter-spacing: .02em; margin-left: 6px; color: #3d4a5f; }
+  /* tiles */
+  .bl .tiles { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+  .bl .tile { background: #0e1420; border: 1px solid #1c2740; padding: 12px 10px; text-align: center; clip-path: polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px); }
+  .bl .tile .k { font-size: 9.5px; font-weight: 800; letter-spacing: .14em; color: #5b6b82; }
+  .bl .tile .v { font-size: 28px; font-weight: 900; font-variant-numeric: tabular-nums; letter-spacing: -.02em; color: #eef4fb; }
+  .bl .tile .v small { font-size: 13px; font-weight: 800; color: #8fa2bd; }
+  .bl .tile.hero .v { font-size: 36px; color: #ffc84a; text-shadow: 0 0 18px rgba(255,200,74,.45); }
+  .bl .tile.hero .v small { color: #c79a3a; font-size: 16px; }
+  .bl .tile .s { font-size: 10px; color: #5b6b82; font-variant-numeric: tabular-nums; }
+  /* matchup */
+  .bl .mu { padding: 11px 0 9px; border-top: 1px solid #141d30; }
+  .bl .mu:first-of-type { border-top: 0; padding-top: 2px; }
+  .bl .mu .row1 { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+  .bl .mu .nm { font-size: 14px; font-weight: 800; color: #eef4fb; }
+  .bl .mu .rt { font-size: 16px; font-weight: 900; font-variant-numeric: tabular-nums; color: #2ee6a8; }
+  .bl .mu .rt.bad { color: #ff5c7a; }
+  .bl .meter { height: 5px; background: #1a2233; display: flex; margin-bottom: 7px; }
+  .bl .meter i { background: linear-gradient(90deg,#2ee6a8,#23d3ee); box-shadow: 0 0 8px rgba(46,230,168,.5); }
+  .bl .mu .sp { display: flex; gap: 12px; font-size: 10px; color: #5b6b82; font-variant-numeric: tabular-nums; }
+  .bl .mu .sp b { color: #dfe8f4; font-weight: 800; }
+  .bl .mu .go { text-align: right; font-size: 9.5px; font-weight: 800; letter-spacing: .1em; color: #23d3ee; margin-top: 6px; }
+  /* history rows */
+  .bl .rec { background: #0e1420; border: 1px solid #1c2740; border-left: 3px solid #2ee6a8; padding: 10px 12px; margin-bottom: 7px; }
+  .bl .rec.l { border-left-color: #ff5c7a; }
+  .bl .rec .top { display: flex; gap: 10px; align-items: center; }
+  .bl .rec .wl { font-size: 15px; font-weight: 900; color: #2ee6a8; width: 18px; flex: none; }
+  .bl .rec.l .wl { color: #ff5c7a; }
+  .bl .rec .bd { flex: 1; min-width: 0; }
+  .bl .rec .m1 { font-size: 13px; font-weight: 800; color: #eef4fb; }
+  .bl .rec .m1 span { color: #5b6b82; font-weight: 600; margin: 0 4px; }
+  .bl .rec .m2 { font-size: 10px; color: #5b6b82; margin-top: 2px; font-variant-numeric: tabular-nums; }
+  .bl .rec .chev { flex: none; color: #2a3a55; font-weight: 900; }
+  .bl .note { display: flex; gap: 6px; margin: 7px 0 0 28px; font-size: 11px; line-height: 1.5; }
+  .bl .note .tag2 { flex: none; font-size: 8.5px; font-weight: 900; letter-spacing: .08em; padding: 2px 5px; margin-top: 1px; color: #5b6b82; border: 1px solid #1c2740; background: #0a101c; }
+  .bl .note.pt .tag2 { color: #ffc84a; border-color: #4a3a14; background: #191307; }
+  .bl .note .tx { color: #8fa2bd; }
+  .bl .note.pt .tx { color: #d9c48a; }
+  /* filters */
+  .bl .filters { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-bottom: 12px; }
+  .bl .filters .f { font-size: 11px; font-weight: 700; color: #8fa2bd; background: #0d1320; border: 1px solid #1c2740; padding: 9px 10px; display: flex; justify-content: space-between; }
+  .bl .filters .f i { font-style: normal; color: #3d4a5f; }
+  .bl .filters .f.on { border-color: #23d3ee; color: #23d3ee; }
+  /* form */
+  .bl .lbl { display: block; font-size: 9.5px; font-weight: 800; letter-spacing: .14em; color: #5b6b82; margin: 0 0 5px; }
+  .bl .inp { background: #0d1320; border: 1px solid #1c2740; color: #dfe8f4; font-size: 14px; font-weight: 700; padding: 11px 12px; margin-bottom: 12px; display: flex; justify-content: space-between; }
+  .bl .inp i { font-style: normal; color: #3d4a5f; }
+  .bl .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 12px; }
+  .bl .seg b { text-align: center; font-size: 13px; font-weight: 800; padding: 11px; background: #0d1320; border: 1px solid #1c2740; color: #5b6b82; clip-path: polygon(5px 0,100% 0,calc(100% - 5px) 100%,0 100%); }
+  .bl .seg b.on { background: #23d3ee; color: #07090f; box-shadow: 0 0 16px rgba(35,211,238,.3); }
+  .bl .seg b.win { background: #2ee6a8; color: #062015; box-shadow: 0 0 16px rgba(46,230,168,.35); }
+  .bl .seg b.loss { background: #ff5c7a; color: #2b0813; box-shadow: 0 0 16px rgba(255,92,122,.35); }
+  .bl .btn { display: block; text-align: center; font-size: 14px; font-weight: 900; letter-spacing: .18em; padding: 14px; color: #07090f; background: linear-gradient(90deg,#23d3ee,#2ee6a8); clip-path: polygon(10px 0,100% 0,calc(100% - 10px) 100%,0 100%); }
+  .bl .btn.ghost { background: #0d1320; color: #8fa2bd; border: 1px solid #1c2740; box-shadow: none; }
+  /* memo tab */
+  .bl .msec { background: #0e1420; border: 1px solid #1c2740; padding: 13px; margin-bottom: 10px; }
+  .bl .msec.common { border-color: #3d3014; background: linear-gradient(180deg,#131007 0%,#0e1420 45%); }
+  .bl .msec .mh { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .bl .msec .mh .t { font-size: 14px; font-weight: 900; color: #eef4fb; }
+  .bl .msec.common .mh .t { color: #ffc84a; letter-spacing: .1em; }
+  .bl .msec .mh .acts { display: flex; gap: 4px; }
+  .bl .msec .mh .acts b { width: 26px; height: 26px; display: grid; place-items: center; font-size: 12px; color: #5b6b82; background: #0d1320; border: 1px solid #1c2740; }
+  .bl .vlist { list-style: none; padding: 0; }
+  .bl .vlist li { position: relative; font-size: 12.5px; color: #c6d2e2; line-height: 1.55; padding: 5px 0 5px 16px; }
+  .bl .vlist li::before { content: "▸"; position: absolute; left: 0; color: #23d3ee; font-weight: 900; }
+  .bl .msec.common .vlist li::before { color: #ffc84a; }
+  .bl .kv { margin-bottom: 9px; }
+  .bl .kv .kk { font-size: 9.5px; font-weight: 800; letter-spacing: .14em; color: #5b6b82; margin-bottom: 3px; }
+  .bl .kv .vv { font-size: 12.5px; color: #c6d2e2; line-height: 1.55; white-space: pre-line; }
+  .bl .badge-turn { display: inline-block; font-size: 11px; font-weight: 900; color: #07090f; background: #23d3ee; padding: 3px 10px; }
+  /* advice */
+  .bl .adv { background: #0e1420; border: 1px solid #1c2740; border-left: 3px solid #23d3ee; padding: 12px 13px; margin-bottom: 9px; }
+  .bl .adv.warn { border-left-color: #ff5c7a; }
+  .bl .adv.good { border-left-color: #2ee6a8; }
+  .bl .adv.tip { border-left-color: #ffc84a; }
+  .bl .adv .ah { font-size: 12.5px; font-weight: 900; margin-bottom: 4px; color: #eef4fb; }
+  .bl .adv.warn .ah { color: #ff8ba1; }
+  .bl .adv.good .ah { color: #6fe9bd; }
+  .bl .adv.tip .ah { color: #ffd47e; }
+  .bl .adv .ab { font-size: 12px; color: #8fa2bd; line-height: 1.6; }
+  .bl .adv .ab b { color: #dfe8f4; font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body>
+
+<div class="intro">
+  <h1>BATTLOG ─ 最終ラフ（全5画面）</h1>
+  <p>A案（ネオンアリーナ）で全画面を作り込みました。名前は <strong>BATTLOG</strong>、先攻/後攻の勝率に<strong>%</strong>を追加済み。これでOKなら本番アプリに適用します。気になる箇所はどんな細部でも指摘してください。</p>
+</div>
+
+<nav class="jump">
+  <a href="#s1">記録</a><a href="#s2">履歴</a><a href="#s3">戦績</a><a href="#s4">メモ</a><a href="#s5">アドバイス</a>
+</nav>
+
+<!-- ========== 記録 ========== -->
+<section class="case" id="s1">
+  <div class="label"><span class="tag">画面1</span><h2>記録タブ</h2><p>入力フォーム。選択系はネオンのセグメント、勝ち=緑/負け=赤で発光。</p></div>
+  <div class="phone"><div class="bl">
+    <div class="hd"><h1>BATT<span>LOG</span></h1><span class="n">128 BATTLES</span></div>
+    <div class="tabs"><b class="on">記録</b><b>履歴</b><b>戦績</b><b>メモ</b><b>助言</b></div>
+    <div class="card">
+      <div class="ct">NEW BATTLE // 対戦を記録</div>
+      <span class="lbl">日付</span>
+      <div class="inp">2026-08-11 <i>▾</i></div>
+      <span class="lbl">使用リーダー（自分）</span>
+      <div class="inp">赤紫ルフィ <i>▾</i></div>
+      <span class="lbl">対戦相手のリーダー</span>
+      <div class="inp">黒ティーチ <i>▾</i></div>
+      <span class="lbl">じゃんけん</span>
+      <div class="seg"><b class="on">勝ち</b><b>負け</b></div>
+      <span class="lbl">先攻 / 後攻</span>
+      <div class="seg"><b class="on">先攻</b><b>後攻</b></div>
+      <span class="lbl">結果</span>
+      <div class="seg"><b class="win">勝ち</b><b>負け</b></div>
+      <span class="lbl">メモ（任意）</span>
+      <div class="inp" style="align-items:flex-start;min-height:52px;"><i>意識したこと・キープ基準・反省など</i></div>
+      <span class="lbl">ポイント（任意）→ メモタブに自動反映</span>
+      <div class="inp" style="align-items:flex-start;min-height:44px;"><i>この対面で残したい攻略ポイント</i></div>
+      <span class="btn">RECORD ▸</span>
+    </div>
+  </div></div>
+</section>
+
+<!-- ========== 履歴 ========== -->
+<section class="case" id="s2">
+  <div class="label"><span class="tag">画面2</span><h2>履歴タブ</h2><p>絞り込み＋一覧。メモ/ポイントはラベル付きで全文表示（ポイントは金色）。</p></div>
+  <div class="phone"><div class="bl">
+    <div class="hd"><h1>BATT<span>LOG</span></h1><span class="n">128 BATTLES</span></div>
+    <div class="tabs"><b>記録</b><b class="on">履歴</b><b>戦績</b><b>メモ</b><b>助言</b></div>
+    <div class="card">
+      <div class="ct">BATTLE LOG // 全128件<span class="sub">タップで編集</span></div>
+      <div class="filters">
+        <div class="f on">赤紫ルフィ <i>▾</i></div>
+        <div class="f">相手：すべて <i>▾</i></div>
+        <div class="f">勝敗：すべて <i>▾</i></div>
+        <div class="f">先後：すべて <i>▾</i></div>
+      </div>
+      <div class="rec">
+        <div class="top"><span class="wl">W</span><div class="bd"><div class="m1">赤紫ルフィ<span>vs</span>黒ティーチ</div><div class="m2">先攻・じゃんけん◯・2026-08-11</div></div><span class="chev">›</span></div>
+        <div class="note"><span class="tag2">MEMO</span><span class="tx">4ターン目のサボ着地が刺さった。ライフ受け2で正解</span></div>
+        <div class="note pt"><span class="tag2">POINT</span><span class="tx">黒ティーチ相手は4t目までにサボを立てると楽</span></div>
+      </div>
+      <div class="rec l">
+        <div class="top"><span class="wl">L</span><div class="bd"><div class="m1">赤紫ルフィ<span>vs</span>青ドフラ</div><div class="m2">後攻・じゃんけん×・2026-08-11</div></div><span class="chev">›</span></div>
+        <div class="note"><span class="tag2">MEMO</span><span class="tx">序盤のライフ管理をミス。受けすぎた</span></div>
+      </div>
+      <div class="rec">
+        <div class="top"><span class="wl">W</span><div class="bd"><div class="m1">赤紫ルフィ<span>vs</span>緑ボニー</div><div class="m2">後攻・じゃんけん◯・2026-08-10</div></div><span class="chev">›</span></div>
+      </div>
+      <span class="btn ghost">バックアップ / クラウド同期 ▾</span>
+    </div>
+  </div></div>
+</section>
+
+<!-- ========== 戦績 ========== -->
+<section class="case" id="s3">
+  <div class="label"><span class="tag">画面3</span><h2>戦績タブ</h2><p>先攻/後攻に「%」を追加。対面カードはタップで履歴へ（既存機能そのまま）。</p></div>
+  <div class="phone"><div class="bl">
+    <div class="hd"><h1>BATT<span>LOG</span></h1><span class="n">128 BATTLES</span></div>
+    <div class="tabs"><b>記録</b><b>履歴</b><b class="on">戦績</b><b>メモ</b><b>助言</b></div>
+    <div class="inp" style="margin-bottom:12px;">赤紫ルフィ <i>▾</i></div>
+    <div class="tiles">
+      <div class="tile hero"><div class="k">WIN RATE</div><div class="v">63<small>%</small></div><div class="s">81勝 47敗 / 128戦</div></div>
+      <div class="tile"><div class="k">先攻</div><div class="v">68<small>%</small></div><div class="s">42-20 (62)</div></div>
+      <div class="tile"><div class="k">後攻</div><div class="v">59<small>%</small></div><div class="s">39-27 (66)</div></div>
+    </div>
+    <div class="card">
+      <div class="ct">MATCHUP // 対戦リーダー別<span class="sub">対戦数の多い順</span></div>
+      <div class="mu">
+        <div class="row1"><span class="nm">黒ティーチ</span><span class="rt bad">44%</span></div>
+        <div class="meter"><i style="width:44%"></i></div>
+        <div class="sp"><span>29戦</span><span>先攻 <b>50%</b> (8-8)</span><span>後攻 <b>38%</b> (5-8)</span></div>
+        <div class="go">この対面の履歴を見る ›</div>
+      </div>
+      <div class="mu">
+        <div class="row1"><span class="nm">緑ボニー</span><span class="rt">71%</span></div>
+        <div class="meter"><i style="width:71%"></i></div>
+        <div class="sp"><span>21戦</span><span>先攻 <b>73%</b> (8-3)</span><span>後攻 <b>70%</b> (7-3)</span></div>
+        <div class="go">この対面の履歴を見る ›</div>
+      </div>
+    </div>
+  </div></div>
+</section>
+
+<!-- ========== メモ ========== -->
+<section class="case" id="s4">
+  <div class="label"><span class="tag">画面4</span><h2>メモタブ</h2><p>「共通」はゴールド系で特別扱い。対面セクションは保存済み表示の例。</p></div>
+  <div class="phone"><div class="bl">
+    <div class="hd"><h1>BATT<span>LOG</span></h1><span class="n">128 BATTLES</span></div>
+    <div class="tabs"><b>記録</b><b>履歴</b><b>戦績</b><b class="on">メモ</b><b>助言</b></div>
+    <div class="inp" style="margin-bottom:12px;">赤紫ルフィ <i>▾</i></div>
+    <div class="msec common">
+      <div class="mh"><span class="t">◆ 共通</span><div class="acts"><b>✎</b></div></div>
+      <ul class="vlist">
+        <li>常に次ターンのドン計算をしてからアタック</li>
+        <li>ライフ受けは基本2まで。3枚目は状況次第</li>
+      </ul>
+    </div>
+    <div class="msec">
+      <div class="mh"><span class="t">vs 黒ティーチ</span><div class="acts"><b>↑</b><b>↓</b><b>✕</b></div></div>
+      <div class="kv"><div class="kk">先後選択</div><span class="badge-turn">先攻</span></div>
+      <div class="kv"><div class="kk">マリガン基準</div><div class="vv">先攻：サボ+2コス
+後攻：ゾロ10枚見て低コス優先</div></div>
+      <div class="kv"><div class="kk">ポイント</div>
+        <ul class="vlist">
+          <li>4t目までにサボを立てると楽</li>
+          <li>KO耐性持ちを盤面に残す</li>
+        </ul>
+      </div>
+      <span class="btn ghost">編集する</span>
+    </div>
+  </div></div>
+</section>
+
+<!-- ========== アドバイス ========== -->
+<section class="case" id="s5">
+  <div class="label"><span class="tag">画面5</span><h2>アドバイスタブ</h2><p>種類別に左端の色で区別（警告=赤/好調=緑/提案=金/情報=シアン）。</p></div>
+  <div class="phone"><div class="bl">
+    <div class="hd"><h1>BATT<span>LOG</span></h1><span class="n">128 BATTLES</span></div>
+    <div class="tabs"><b>記録</b><b>履歴</b><b>戦績</b><b>メモ</b><b class="on">助言</b></div>
+    <div class="inp" style="margin-bottom:12px;">赤紫ルフィ <i>▾</i></div>
+    <div class="adv"><div class="ah">📊 全体成績</div><div class="ab"><b>128</b>戦 <b>81</b>勝 <b>47</b>敗、勝率 <b>63%</b>。</div></div>
+    <div class="adv tip"><div class="ah">🎲 先攻の方が明確に勝てている</div><div class="ab">先攻 <b>68%</b>／後攻 <b>59%</b>。じゃんけんに勝ったら基本は先攻を選ぶのが有利。</div></div>
+    <div class="adv warn"><div class="ah">⚠️ 苦手: 黒ティーチ（勝率 44%）</div><div class="ab"><b>13勝16敗</b>。負け越しの主因。この相手には先攻(<b>50%</b>)の方が戦えている。</div></div>
+    <div class="adv good"><div class="ah">🏆 得意: 緑ボニー（勝率 71%）</div><div class="ab"><b>15勝6敗</b>。ここでの取りこぼしを無くすのが安定への近道。</div></div>
+    <span class="btn ghost" style="margin-top:4px;">戦績サマリーをコピー</span>
+  </div></div>
+</section>
+
+<div class="foot">
+  <b>確認ポイント：</b>①BATTLOGのロゴの見え方 ②先攻/後攻の%表記 ③メモ/ポイントの色分け（グレー/金） ④各タブの雰囲気の統一感。<br>
+  OKならこのデザインを本番に適用します。「ここだけ変えて」の部分指定も歓迎です。
+</div>
+
+</body>
+</html>
