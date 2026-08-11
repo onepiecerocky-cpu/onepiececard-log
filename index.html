@@ -768,11 +768,26 @@
     records.forEach(function (r) { if (r.myLeader) set[r.myLeader] = 1; });
     return Object.keys(set).sort(function (a, b) { return a.localeCompare(b, "ja"); });
   }
+  // 全リーダー（union）を、指定ロールでの使用回数が多い順に並べる（同数は五十音順）
+  function leadersByFreq(role) {
+    var all = {}, cnt = {};
+    records.forEach(function (r) {
+      if (r.myLeader) all[r.myLeader] = true;
+      if (r.oppLeader) all[r.oppLeader] = true;
+      if (role === "my") { if (r.myLeader) cnt[r.myLeader] = (cnt[r.myLeader] || 0) + 1; }
+      else if (role === "opp") { if (r.oppLeader) cnt[r.oppLeader] = (cnt[r.oppLeader] || 0) + 1; }
+      else { if (r.myLeader) cnt[r.myLeader] = (cnt[r.myLeader] || 0) + 1; if (r.oppLeader) cnt[r.oppLeader] = (cnt[r.oppLeader] || 0) + 1; }
+    });
+    return Object.keys(all).sort(function (a, b) {
+      var d = (cnt[b] || 0) - (cnt[a] || 0);
+      return d ? d : a.localeCompare(b, "ja");
+    });
+  }
 
-  // Fill a form leader <select> with past leaders + "new" option. selVal: value to preselect.
-  function fillLeaderCombo(selId, newId, selVal) {
+  // Fill a form leader <select> with past leaders (よく選ぶ順) + "new" option. role: 'my'/'opp'.
+  function fillLeaderCombo(selId, newId, selVal, role) {
     var sel = $(selId), inp = $(newId);
-    var names = allLeaders();
+    var names = leadersByFreq(role);
     var html = '<option value="">— 選択してください —</option>';
     html += names.map(function (n) { return '<option value="' + esc(n) + '">' + esc(n) + '</option>'; }).join("");
     html += '<option value="__new__">＋ 新しいリーダーを入力…</option>';
@@ -787,8 +802,8 @@
     }
   }
   function refreshLeaderCombos(myVal, oppVal) {
-    fillLeaderCombo("#f-my-sel", "#f-my-new", myVal);
-    fillLeaderCombo("#f-opp-sel", "#f-opp-new", oppVal);
+    fillLeaderCombo("#f-my-sel", "#f-my-new", myVal, "my");
+    fillLeaderCombo("#f-opp-sel", "#f-opp-new", oppVal, "opp");
   }
   function bindCombo(selId, newId) {
     $(selId).addEventListener("change", function () {
@@ -867,8 +882,8 @@
     if (!r) return;
     $("#ed-id").value = r.id;
     $("#ed-date").value = r.date;
-    fillLeaderCombo("#ed-my-sel", "#ed-my-new", r.myLeader);
-    fillLeaderCombo("#ed-opp-sel", "#ed-opp-new", r.oppLeader);
+    fillLeaderCombo("#ed-my-sel", "#ed-my-new", r.myLeader, "my");
+    fillLeaderCombo("#ed-opp-sel", "#ed-opp-new", r.oppLeader, "opp");
     document.querySelector('input[name="ed-janken"][value="' + (r.jankenWon ? "win" : "lose") + '"]').checked = true;
     document.querySelector('input[name="ed-turn"][value="' + r.turn + '"]').checked = true;
     document.querySelector('input[name="ed-result"][value="' + r.result + '"]').checked = true;
@@ -1277,9 +1292,8 @@
   function renderMemo() { fillMemoLeaderSelect(); renderMemoPage(); }
 
   function oppOptions(selectedOpp) {
-    var names = allLeaders();
+    var names = leadersByFreq("opp");
     if (selectedOpp && names.indexOf(selectedOpp) < 0) names = names.concat([selectedOpp]);
-    names.sort(function (a, b) { return a.localeCompare(b, "ja"); });
     var opts = '<option value="">— 対面を選択 —</option>';
     opts += names.map(function (n) { return '<option value="' + esc(n) + '"' + (n === selectedOpp ? ' selected' : '') + '>' + esc(n) + '</option>'; }).join("");
     opts += '<option value="__new__">＋ 新しい対面を入力…</option>';
@@ -1489,7 +1503,7 @@
     var row = $("#memoAddRow");
     var show = row.style.display === "none" || !row.style.display;
     row.style.display = show ? "block" : "none";
-    if (show) fillLeaderCombo("#memoNewSel", "#memoNewText", null);
+    if (show) fillLeaderCombo("#memoNewSel", "#memoNewText", null, "my");
   });
   $("#memoNewCancel").addEventListener("click", function () { $("#memoAddRow").style.display = "none"; });
   $("#memoNewCreate").addEventListener("click", function () {
