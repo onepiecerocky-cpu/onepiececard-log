@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>戦績ノート デザインラフ 3案</title>
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", sans-serif;
+    background: #ececec; color: #222; padding-bottom: 80px;
+  }
+  .intro { max-width: 720px; margin: 0 auto; padding: 28px 20px 8px; }
+  .intro h1 { font-size: 20px; font-weight: 800; margin-bottom: 8px; }
+  .intro p { font-size: 13px; line-height: 1.7; color: #555; }
+  nav.jump {
+    position: sticky; top: 0; z-index: 50; background: rgba(255,255,255,.92);
+    backdrop-filter: blur(8px); border-bottom: 1px solid #ddd;
+    display: flex; gap: 6px; padding: 10px 16px; justify-content: center;
+  }
+  nav.jump a {
+    text-decoration: none; font-size: 13px; font-weight: 700; color: #333;
+    padding: 7px 14px; border-radius: 8px; border: 1px solid #ccc; background: #fff;
+  }
+  .case { max-width: 720px; margin: 0 auto; padding: 34px 16px 10px; }
+  .case > .label { margin-bottom: 14px; }
+  .case > .label .tag {
+    display: inline-block; font-size: 12px; font-weight: 800; color: #fff; background: #222;
+    border-radius: 6px; padding: 3px 10px; margin-bottom: 6px;
+  }
+  .case > .label h2 { font-size: 17px; font-weight: 800; }
+  .case > .label p { font-size: 12.5px; color: #666; line-height: 1.6; margin-top: 4px; }
+  .phone {
+    max-width: 400px; margin: 0 auto; border-radius: 24px; overflow: hidden;
+    box-shadow: 0 12px 40px rgba(0,0,0,.25); border: 1px solid rgba(0,0,0,.15);
+  }
+  .foot { max-width: 720px; margin: 30px auto 0; padding: 0 20px; font-size: 13px; color: #555; line-height: 1.8; }
+
+  /* ============ 案A: NEON ARENA ============ */
+  .mA { background: #07090f; color: #dfe8f4; padding: 18px 14px 26px; }
+  .mA .hd { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; }
+  .mA .hd h1 { font-size: 16px; font-weight: 900; letter-spacing: .06em; color: #fff; }
+  .mA .hd h1 span { color: #23d3ee; text-shadow: 0 0 12px rgba(35,211,238,.6); }
+  .mA .hd .n { font-size: 11px; color: #5b6b82; font-weight: 700; letter-spacing: .1em; }
+  .mA .tabs { display: grid; grid-template-columns: repeat(5,1fr); gap: 3px; margin-bottom: 16px; }
+  .mA .tabs b {
+    font-size: 10.5px; font-weight: 800; text-align: center; padding: 9px 0; letter-spacing: .05em;
+    color: #5b6b82; background: #0d1320; clip-path: polygon(6px 0,100% 0,calc(100% - 6px) 100%,0 100%);
+  }
+  .mA .tabs b.on { color: #07090f; background: #23d3ee; }
+  .mA .tiles { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+  .mA .tile {
+    background: #0e1420; border: 1px solid #1c2740; padding: 12px 10px; text-align: center;
+    clip-path: polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px);
+  }
+  .mA .tile .k { font-size: 9.5px; font-weight: 800; letter-spacing: .14em; color: #5b6b82; }
+  .mA .tile .v { font-size: 30px; font-weight: 900; font-variant-numeric: tabular-nums; letter-spacing: -.02em; color: #eef4fb; }
+  .mA .tile.hero .v { font-size: 36px; color: #ffc84a; text-shadow: 0 0 18px rgba(255,200,74,.45); }
+  .mA .tile .s { font-size: 10px; color: #5b6b82; font-variant-numeric: tabular-nums; }
+  .mA .card { background: #0e1420; border: 1px solid #1c2740; padding: 13px; margin-bottom: 10px; }
+  .mA .card .ct { font-size: 11px; font-weight: 800; letter-spacing: .12em; color: #5b6b82; margin-bottom: 10px; }
+  .mA .mu .row1 { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+  .mA .mu .nm { font-size: 14px; font-weight: 800; color: #eef4fb; }
+  .mA .mu .rt { font-size: 16px; font-weight: 900; font-variant-numeric: tabular-nums; color: #2ee6a8; }
+  .mA .meter { height: 5px; background: #1a2233; display: flex; margin-bottom: 8px; }
+  .mA .meter i { background: linear-gradient(90deg,#2ee6a8,#23d3ee); box-shadow: 0 0 8px rgba(46,230,168,.5); }
+  .mA .sp { display: flex; gap: 12px; font-size: 10px; color: #5b6b82; font-variant-numeric: tabular-nums; }
+  .mA .sp b { color: #dfe8f4; font-weight: 800; }
+  .mA .rec { display: flex; gap: 10px; align-items: center; background: #0e1420; border: 1px solid #1c2740; border-left: 3px solid #2ee6a8; padding: 10px 12px; margin-bottom: 7px; }
+  .mA .rec.l { border-left-color: #ff5c7a; }
+  .mA .rec .wl { font-size: 15px; font-weight: 900; color: #2ee6a8; width: 20px; }
+  .mA .rec.l .wl { color: #ff5c7a; }
+  .mA .rec .bd { flex: 1; min-width: 0; }
+  .mA .rec .m1 { font-size: 13px; font-weight: 800; color: #eef4fb; }
+  .mA .rec .m1 span { color: #5b6b82; font-weight: 600; margin: 0 4px; }
+  .mA .rec .m2 { font-size: 10px; color: #5b6b82; margin-top: 2px; }
+  .mA .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px; }
+  .mA .seg b { text-align: center; font-size: 13px; font-weight: 800; padding: 11px; background: #0d1320; border: 1px solid #1c2740; color: #5b6b82; clip-path: polygon(5px 0,100% 0,calc(100% - 5px) 100%,0 100%); }
+  .mA .seg b.on { background: #2ee6a8; color: #07090f; box-shadow: 0 0 16px rgba(46,230,168,.35); }
+  .mA .btn { display: block; text-align: center; font-size: 14px; font-weight: 900; letter-spacing: .18em; padding: 14px; color: #07090f; background: linear-gradient(90deg,#23d3ee,#2ee6a8); clip-path: polygon(10px 0,100% 0,calc(100% - 10px) 100%,0 100%); }
+
+  /* ============ 案B: SHIRO LOG ============ */
+  .mB { background: #fcfcfa; color: #17181a; padding: 20px 18px 28px; }
+  .mB .hd { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: 14px; border-bottom: 2px solid #17181a; margin-bottom: 4px; }
+  .mB .hd h1 { font-size: 17px; font-weight: 800; letter-spacing: .01em; }
+  .mB .hd .n { font-size: 12px; color: #8a8a85; font-variant-numeric: tabular-nums; }
+  .mB .tabs { display: flex; margin-bottom: 20px; border-bottom: 1px solid #e6e6e1; }
+  .mB .tabs b { font-size: 12.5px; font-weight: 600; color: #8a8a85; padding: 12px 0; margin-right: 22px; }
+  .mB .tabs b.on { color: #17181a; font-weight: 800; box-shadow: inset 0 -2px 0 #d8382e; }
+  .mB .tiles { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 0; margin-bottom: 22px; }
+  .mB .tile { padding: 4px 8px 4px 0; }
+  .mB .tile + .tile { border-left: 1px solid #e6e6e1; padding-left: 14px; }
+  .mB .tile .k { font-size: 11px; color: #8a8a85; font-weight: 600; margin-bottom: 2px; }
+  .mB .tile .v { font-size: 32px; font-weight: 300; font-variant-numeric: tabular-nums; letter-spacing: -.03em; }
+  .mB .tile.hero .v { font-weight: 700; font-size: 40px; }
+  .mB .tile .v small { font-size: 14px; color: #8a8a85; font-weight: 500; }
+  .mB .tile .s { font-size: 11px; color: #8a8a85; font-variant-numeric: tabular-nums; }
+  .mB .ct { font-size: 12px; font-weight: 800; margin: 0 0 12px; padding-top: 16px; border-top: 1px solid #e6e6e1; }
+  .mB .mu { margin-bottom: 16px; }
+  .mB .mu .row1 { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 7px; }
+  .mB .mu .nm { font-size: 14px; font-weight: 700; }
+  .mB .mu .rt { font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .mB .meter { height: 4px; background: #eeeeea; border-radius: 2px; display: flex; margin-bottom: 7px; }
+  .mB .meter i { background: #17181a; border-radius: 2px; }
+  .mB .sp { display: flex; gap: 16px; font-size: 11px; color: #8a8a85; font-variant-numeric: tabular-nums; }
+  .mB .sp b { color: #17181a; font-weight: 700; }
+  .mB .rec { display: flex; gap: 12px; align-items: center; padding: 13px 2px; border-bottom: 1px solid #efefe9; }
+  .mB .wl { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 800; background: #17181a; color: #fff; flex: none; }
+  .mB .rec.l .wl { background: #fff; color: #17181a; box-shadow: inset 0 0 0 1.5px #17181a; }
+  .mB .rec .bd { flex: 1; }
+  .mB .rec .m1 { font-size: 14px; font-weight: 700; }
+  .mB .rec .m1 span { color: #8a8a85; font-weight: 500; margin: 0 5px; }
+  .mB .rec .m2 { font-size: 11px; color: #8a8a85; margin-top: 2px; }
+  .mB .seg { display: flex; border: 1.5px solid #17181a; border-radius: 10px; overflow: hidden; margin: 18px 0 12px; }
+  .mB .seg b { flex: 1; text-align: center; font-size: 13.5px; font-weight: 700; padding: 12px; color: #17181a; }
+  .mB .seg b.on { background: #17181a; color: #fff; }
+  .mB .btn { display: block; text-align: center; font-size: 14.5px; font-weight: 800; padding: 15px; color: #fff; background: #d8382e; border-radius: 12px; }
+
+  /* ============ 案C: 航海日誌 ============ */
+  .mC { background: #f3ead7; color: #4a3826; padding: 20px 16px 28px;
+        background-image: radial-gradient(ellipse at 50% 0%, rgba(255,252,240,.8), transparent 70%); }
+  .mC .serif { font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif; }
+  .mC .hd { text-align: center; margin-bottom: 14px; }
+  .mC .hd h1 { font-size: 18px; font-weight: 700; letter-spacing: .2em; }
+  .mC .hd h1::before { content: "⚓ "; }
+  .mC .hd .n { font-size: 11px; color: #96826a; letter-spacing: .3em; margin-top: 3px; }
+  .mC .rule { height: 10px; margin: 0 30px 14px; border-bottom: 2px double #c9b489; }
+  .mC .tabs { display: flex; justify-content: center; gap: 4px; margin-bottom: 18px; flex-wrap: wrap; }
+  .mC .tabs b { font-size: 11.5px; font-weight: 700; padding: 7px 13px; border: 1px solid #c9b489; border-radius: 999px; color: #96826a; background: rgba(255,252,242,.5); }
+  .mC .tabs b.on { background: #4a3826; color: #f3ead7; border-color: #4a3826; }
+  .mC .tiles { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 9px; margin-bottom: 14px; }
+  .mC .tile { background: #faf4e4; border: 1px solid #d9c8a4; border-radius: 4px; box-shadow: 0 2px 0 #d9c8a4; padding: 12px 8px; text-align: center; }
+  .mC .tile .k { font-size: 10px; font-weight: 700; color: #96826a; letter-spacing: .12em; }
+  .mC .tile .v { font-size: 29px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .mC .tile.hero .v { font-size: 34px; color: #a8781f; }
+  .mC .tile .s { font-size: 10px; color: #96826a; font-variant-numeric: tabular-nums; }
+  .mC .card { background: #faf4e4; border: 1px solid #d9c8a4; border-radius: 4px; box-shadow: 0 2px 0 #d9c8a4; padding: 14px; margin-bottom: 11px; }
+  .mC .ct { font-size: 12px; font-weight: 700; letter-spacing: .18em; color: #96826a; text-align: center; margin-bottom: 12px; }
+  .mC .ct::before, .mC .ct::after { content: " ─── "; color: #c9b489; }
+  .mC .mu .row1 { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+  .mC .mu .nm { font-size: 14.5px; font-weight: 700; }
+  .mC .mu .rt { font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; color: #2e6e4e; }
+  .mC .meter { height: 7px; background: #e6d9bc; border-radius: 4px; display: flex; margin-bottom: 8px; border: 1px solid #d9c8a4; }
+  .mC .meter i { background: #2e6e4e; border-radius: 3px; }
+  .mC .sp { display: flex; gap: 14px; font-size: 11px; color: #96826a; font-variant-numeric: tabular-nums; }
+  .mC .sp b { color: #4a3826; }
+  .mC .rec { display: flex; gap: 10px; align-items: center; background: #faf4e4; border: 1px dashed #c9b489; border-radius: 4px; padding: 10px 12px; margin-bottom: 7px; }
+  .mC .wl { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 800; color: #f3ead7; background: #2e6e4e; flex: none; box-shadow: 0 1px 0 #d9c8a4; }
+  .mC .rec.l .wl { background: #a83232; }
+  .mC .rec .bd { flex: 1; }
+  .mC .rec .m1 { font-size: 14px; font-weight: 700; }
+  .mC .rec .m1 span { color: #96826a; font-weight: 500; margin: 0 4px; font-size: 12px; }
+  .mC .rec .m2 { font-size: 10.5px; color: #96826a; margin-top: 2px; }
+  .mC .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 11px; }
+  .mC .seg b { text-align: center; font-size: 13px; font-weight: 700; padding: 11px; border: 1.5px solid #c9b489; border-radius: 4px; color: #96826a; background: rgba(255,252,242,.5); }
+  .mC .seg b.on { border-color: #2e6e4e; color: #2e6e4e; background: #e7f0e9; box-shadow: 0 2px 0 #c8d8cc; }
+  .mC .btn { display: block; text-align: center; font-size: 14px; font-weight: 800; letter-spacing: .3em; padding: 14px; color: #f3ead7; background: #7d1f1f; border-radius: 6px; box-shadow: 0 3px 0 #5a1414; }
+</style>
+</head>
+<body>
+
+<div class="intro">
+  <h1>戦績ノート デザインラフ 3案</h1>
+  <p>同じ画面（戦績サマリー・履歴・入力ボタン）をダミーデータで3方向にデザインしたものです。<strong>見た目の方向性を選ぶためのラフ</strong>なので、細部は未調整です。気に入った案（組み合わせでもOK）と、変えたい点を教えてください。</p>
+</div>
+
+<nav class="jump">
+  <a href="#caseA">A: ネオンアリーナ</a>
+  <a href="#caseB">B: シロログ</a>
+  <a href="#caseC">C: 航海日誌</a>
+</nav>
+
+<!-- ================= A ================= -->
+<section class="case" id="caseA">
+  <div class="label">
+    <span class="tag">案A</span>
+    <h2>ネオンアリーナ（ゲーミング × データ分析）</h2>
+    <p>対戦ゲームのランクマ画面のような、ダーク＋ネオンの緊張感。数字を大きく強く見せて「戦績ダッシュボード」感を出す方向。</p>
+  </div>
+  <div class="phone">
+    <div class="mA">
+      <div class="hd"><h1>SENSEKI<span>_LOG</span></h1><span class="n">TOTAL 128</span></div>
+      <div class="tabs"><b>記録</b><b>履歴</b><b class="on">戦績</b><b>メモ</b><b>助言</b></div>
+      <div class="tiles">
+        <div class="tile hero"><div class="k">WIN RATE</div><div class="v">63<span style="font-size:16px">%</span></div><div class="s">81勝 47敗</div></div>
+        <div class="tile"><div class="k">先攻</div><div class="v">68</div><div class="s">42-20</div></div>
+        <div class="tile"><div class="k">後攻</div><div class="v">59</div><div class="s">39-27</div></div>
+      </div>
+      <div class="card">
+        <div class="ct">MATCHUP // 対戦リーダー別</div>
+        <div class="mu">
+          <div class="row1"><span class="nm">黒ティーチ</span><span class="rt">44%</span></div>
+          <div class="meter"><i style="width:44%"></i></div>
+          <div class="sp"><span>先攻 <b>50%</b> (8-8)</span><span>後攻 <b>38%</b> (5-8)</span><span>29戦</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ct">RECENT // 直近の対戦</div>
+        <div class="rec"><span class="wl">W</span><div class="bd"><div class="m1">赤紫ルフィ<span>vs</span>黒ティーチ</div><div class="m2">先攻・じゃんけん◯・8/11</div></div></div>
+        <div class="rec l"><span class="wl">L</span><div class="bd"><div class="m1">赤紫ルフィ<span>vs</span>青ドフラ</div><div class="m2">後攻・じゃんけん×・8/11 — 序盤のライフ管理をミス</div></div></div>
+      </div>
+      <div class="card">
+        <div class="ct">NEW GAME // 結果</div>
+        <div class="seg"><b class="on">勝ち</b><b>負け</b></div>
+        <span class="btn">RECORD ▸</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= B ================= -->
+<section class="case" id="caseB">
+  <div class="label">
+    <span class="tag">案B</span>
+    <h2>シロログ（ミニマル / クリーン）</h2>
+    <p>白地・罫線・タイポグラフィだけで構成する新聞/手帳のような静かなデザイン。赤一色をアクセントに、データを主役に。勝敗は「塗り＝勝ち／輪郭＝負け」で表現。</p>
+  </div>
+  <div class="phone">
+    <div class="mB">
+      <div class="hd"><h1>戦績ノート</h1><span class="n">128戦</span></div>
+      <div class="tabs"><b>記録</b><b>履歴</b><b class="on">戦績</b><b>メモ</b><b>アドバイス</b></div>
+      <div class="tiles">
+        <div class="tile hero"><div class="k">総合勝率</div><div class="v">63<small>%</small></div><div class="s">81勝47敗</div></div>
+        <div class="tile"><div class="k">先攻</div><div class="v">68<small>%</small></div><div class="s">42-20</div></div>
+        <div class="tile"><div class="k">後攻</div><div class="v">59<small>%</small></div><div class="s">39-27</div></div>
+      </div>
+      <div class="ct">対戦リーダー別</div>
+      <div class="mu">
+        <div class="row1"><span class="nm">黒ティーチ</span><span class="rt">44%</span></div>
+        <div class="meter"><i style="width:44%"></i></div>
+        <div class="sp"><span>先攻 <b>50%</b> 8-8</span><span>後攻 <b>38%</b> 5-8</span><span>29戦</span></div>
+      </div>
+      <div class="ct">直近の対戦</div>
+      <div class="rec"><span class="wl">勝</span><div class="bd"><div class="m1">赤紫ルフィ<span>vs</span>黒ティーチ</div><div class="m2">先攻・じゃんけん◯・8/11</div></div></div>
+      <div class="rec l"><span class="wl">負</span><div class="bd"><div class="m1">赤紫ルフィ<span>vs</span>青ドフラ</div><div class="m2">後攻・じゃんけん×・8/11 — 序盤のライフ管理をミス</div></div></div>
+      <div class="seg"><b class="on">勝ち</b><b>負け</b></div>
+      <span class="btn">記録する</span>
+    </div>
+  </div>
+</section>
+
+<!-- ================= C ================= -->
+<section class="case" id="caseC">
+  <div class="label">
+    <span class="tag">案C</span>
+    <h2>航海日誌（海賊 / ワンピースの世界観）</h2>
+    <p>羊皮紙に記す航海日誌のイメージ。明朝体・金茶のインク・封蝋の赤。対戦の記録を「冒険の記録」として残す温かみのある方向。</p>
+  </div>
+  <div class="phone">
+    <div class="mC serif">
+      <div class="hd"><h1>戦績日誌</h1><div class="n">─ 航海128日目 ─</div></div>
+      <div class="tabs"><b>記録</b><b>履歴</b><b class="on">戦績</b><b>備忘録</b><b>助言</b></div>
+      <div class="tiles">
+        <div class="tile hero"><div class="k">総合勝率</div><div class="v">63<span style="font-size:15px">%</span></div><div class="s">81勝 47敗</div></div>
+        <div class="tile"><div class="k">先攻</div><div class="v">68</div><div class="s">42-20</div></div>
+        <div class="tile"><div class="k">後攻</div><div class="v">59</div><div class="s">39-27</div></div>
+      </div>
+      <div class="card">
+        <div class="ct">敵対勢力の記録</div>
+        <div class="mu">
+          <div class="row1"><span class="nm">黒ティーチ</span><span class="rt">四割四分</span></div>
+          <div class="meter"><i style="width:44%"></i></div>
+          <div class="sp"><span>先攻 <b>50%</b> (8-8)</span><span>後攻 <b>38%</b> (5-8)</span><span>29戦</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ct">近況の航海</div>
+        <div class="rec"><span class="wl">勝</span><div class="bd"><div class="m1">赤紫ルフィ<span>対</span>黒ティーチ</div><div class="m2">先攻・じゃんけん◯・八月十一日</div></div></div>
+        <div class="rec l"><span class="wl">敗</span><div class="bd"><div class="m1">赤紫ルフィ<span>対</span>青ドフラ</div><div class="m2">後攻・じゃんけん×・八月十一日 — 序盤のライフ管理をミス</div></div></div>
+      </div>
+      <div class="card">
+        <div class="ct">本日の戦果</div>
+        <div class="seg"><b class="on">勝利</b><b>敗北</b></div>
+        <span class="btn">日誌に記す</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="foot">
+  <b>フィードバックの例：</b><br>
+  「Bが好き。でも勝率の数字はAみたいに大きく」／「Cベースで色だけ落ち着かせて」／「AとBの中間で」など、自由にどうぞ。次のラウンドで方向を絞って作り込みます。
+</div>
+
+</body>
+</html>
