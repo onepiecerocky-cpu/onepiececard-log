@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>デザインラフ ラウンド2（カードゲーム風）</title>
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", sans-serif; background: #ececec; color: #222; padding-bottom: 80px; }
+  .intro { max-width: 720px; margin: 0 auto; padding: 28px 20px 8px; }
+  .intro h1 { font-size: 20px; font-weight: 800; margin-bottom: 8px; }
+  .intro p { font-size: 13px; line-height: 1.7; color: #555; }
+  nav.jump { position: sticky; top: 0; z-index: 50; background: rgba(255,255,255,.92); backdrop-filter: blur(8px); border-bottom: 1px solid #ddd; display: flex; gap: 6px; padding: 10px 16px; justify-content: center; }
+  nav.jump a { text-decoration: none; font-size: 13px; font-weight: 700; color: #333; padding: 7px 14px; border-radius: 8px; border: 1px solid #ccc; background: #fff; }
+  .case { max-width: 720px; margin: 0 auto; padding: 34px 16px 10px; }
+  .case > .label { margin-bottom: 14px; }
+  .case > .label .tag { display: inline-block; font-size: 12px; font-weight: 800; color: #fff; background: #222; border-radius: 6px; padding: 3px 10px; margin-bottom: 6px; }
+  .case > .label h2 { font-size: 17px; font-weight: 800; }
+  .case > .label p { font-size: 12.5px; color: #666; line-height: 1.6; margin-top: 4px; }
+  .phone { max-width: 400px; margin: 0 auto; border-radius: 24px; overflow: hidden; box-shadow: 0 12px 40px rgba(0,0,0,.25); border: 1px solid rgba(0,0,0,.15); }
+  .foot { max-width: 720px; margin: 30px auto 0; padding: 0 20px; font-size: 13px; color: #555; line-height: 1.8; }
+
+  /* ============ 基準: 案A ネオンアリーナ（ラウンド1と同じ） ============ */
+  .mA { background: #07090f; color: #dfe8f4; padding: 18px 14px 26px; }
+  .mA .hd { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; }
+  .mA .hd h1 { font-size: 16px; font-weight: 900; letter-spacing: .06em; color: #fff; }
+  .mA .hd h1 span { color: #23d3ee; text-shadow: 0 0 12px rgba(35,211,238,.6); }
+  .mA .hd .n { font-size: 11px; color: #5b6b82; font-weight: 700; letter-spacing: .1em; }
+  .mA .tabs { display: grid; grid-template-columns: repeat(5,1fr); gap: 3px; margin-bottom: 16px; }
+  .mA .tabs b { font-size: 10.5px; font-weight: 800; text-align: center; padding: 9px 0; letter-spacing: .05em; color: #5b6b82; background: #0d1320; clip-path: polygon(6px 0,100% 0,calc(100% - 6px) 100%,0 100%); }
+  .mA .tabs b.on { color: #07090f; background: #23d3ee; }
+  .mA .tiles { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+  .mA .tile { background: #0e1420; border: 1px solid #1c2740; padding: 12px 10px; text-align: center; clip-path: polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px); }
+  .mA .tile .k { font-size: 9.5px; font-weight: 800; letter-spacing: .14em; color: #5b6b82; }
+  .mA .tile .v { font-size: 30px; font-weight: 900; font-variant-numeric: tabular-nums; letter-spacing: -.02em; color: #eef4fb; }
+  .mA .tile.hero .v { font-size: 36px; color: #ffc84a; text-shadow: 0 0 18px rgba(255,200,74,.45); }
+  .mA .tile .s { font-size: 10px; color: #5b6b82; font-variant-numeric: tabular-nums; }
+  .mA .card { background: #0e1420; border: 1px solid #1c2740; padding: 13px; margin-bottom: 10px; }
+  .mA .card .ct { font-size: 11px; font-weight: 800; letter-spacing: .12em; color: #5b6b82; margin-bottom: 10px; }
+  .mA .mu .row1 { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+  .mA .mu .nm { font-size: 14px; font-weight: 800; color: #eef4fb; }
+  .mA .mu .rt { font-size: 16px; font-weight: 900; font-variant-numeric: tabular-nums; color: #2ee6a8; }
+  .mA .meter { height: 5px; background: #1a2233; display: flex; margin-bottom: 8px; }
+  .mA .meter i { background: linear-gradient(90deg,#2ee6a8,#23d3ee); box-shadow: 0 0 8px rgba(46,230,168,.5); }
+  .mA .sp { display: flex; gap: 12px; font-size: 10px; color: #5b6b82; font-variant-numeric: tabular-nums; }
+  .mA .sp b { color: #dfe8f4; font-weight: 800; }
+  .mA .rec { display: flex; gap: 10px; align-items: center; background: #0e1420; border: 1px solid #1c2740; border-left: 3px solid #2ee6a8; padding: 10px 12px; margin-bottom: 7px; }
+  .mA .rec.l { border-left-color: #ff5c7a; }
+  .mA .rec .wl { font-size: 15px; font-weight: 900; color: #2ee6a8; width: 20px; }
+  .mA .rec.l .wl { color: #ff5c7a; }
+  .mA .rec .bd { flex: 1; min-width: 0; }
+  .mA .rec .m1 { font-size: 13px; font-weight: 800; color: #eef4fb; }
+  .mA .rec .m1 span { color: #5b6b82; font-weight: 600; margin: 0 4px; }
+  .mA .rec .m2 { font-size: 10px; color: #5b6b82; margin-top: 2px; }
+  .mA .btn { display: block; text-align: center; font-size: 14px; font-weight: 900; letter-spacing: .18em; padding: 14px; color: #07090f; background: linear-gradient(90deg,#23d3ee,#2ee6a8); clip-path: polygon(10px 0,100% 0,calc(100% - 10px) 100%,0 100%); }
+
+  /* ============ A2: デュエルHUD ============ */
+  .mD { background: #0c0a14 radial-gradient(ellipse at 50% -10%, #241b3a 0%, transparent 60%); color: #e8e2f2; padding: 18px 14px 26px; }
+  .gold { background: linear-gradient(160deg,#f7dc8a 8%,#c1912f 40%,#f2ca63 60%,#8f6a1e 95%); }
+  .goldtx { background: linear-gradient(160deg,#f7dc8a 15%,#d9ab45 50%,#f2ca63 75%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .mD .hd { text-align: center; margin-bottom: 14px; }
+  .mD .hd h1 { font-size: 19px; font-weight: 900; letter-spacing: .24em; }
+  .mD .hd .n { font-size: 10px; letter-spacing: .3em; color: #7d7394; margin-top: 3px; font-weight: 700; }
+  .mD .tabs { display: grid; grid-template-columns: repeat(5,1fr); gap: 5px; margin-bottom: 16px; }
+  .mD .tabs b { font-size: 10.5px; font-weight: 800; text-align: center; padding: 9px 0 8px; color: #7d7394; background: #171226; border: 1px solid #2c2344; border-radius: 8px 8px 3px 3px; border-bottom-width: 3px; }
+  .mD .tabs b.on { color: #1a1206; background: linear-gradient(180deg,#f2ca63,#c1912f); border-color: #8f6a1e; }
+  .mD .frame { position: relative; background: #141021; border: 1px solid #3a2e5c; border-radius: 10px; padding: 14px 13px; margin-bottom: 11px; box-shadow: inset 0 0 24px rgba(90,60,160,.15), 0 2px 10px rgba(0,0,0,.5); }
+  .mD .frame::before { content: ""; position: absolute; inset: 3px; border: 1px solid rgba(242,202,99,.28); border-radius: 7px; pointer-events: none; }
+  .mD .corner { position: absolute; width: 10px; height: 10px; border: 2px solid #d9ab45; }
+  .mD .c1 { top: -1px; left: -1px; border-right: 0; border-bottom: 0; border-radius: 8px 0 0 0; }
+  .mD .c2 { top: -1px; right: -1px; border-left: 0; border-bottom: 0; border-radius: 0 8px 0 0; }
+  .mD .c3 { bottom: -1px; left: -1px; border-right: 0; border-top: 0; border-radius: 0 0 0 8px; }
+  .mD .c4 { bottom: -1px; right: -1px; border-left: 0; border-top: 0; border-radius: 0 0 8px 0; }
+  .mD .ct { font-size: 10.5px; font-weight: 800; letter-spacing: .22em; color: #a08cc9; text-align: center; margin-bottom: 12px; }
+  .mD .hexrow { display: flex; align-items: center; justify-content: space-around; margin-bottom: 4px; }
+  .mD .hex { width: 92px; height: 100px; clip-path: polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%); display: grid; place-items: center; text-align: center; padding: 4px; }
+  .mD .hex.big { width: 116px; height: 128px; }
+  .mD .hex .in { width: calc(100% - 6px); height: calc(100% - 6px); clip-path: polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%); background: #1b1530; display: grid; place-items: center; }
+  .mD .hex .k { font-size: 9px; font-weight: 800; letter-spacing: .14em; color: #7d7394; }
+  .mD .hex .v { font-size: 26px; font-weight: 900; font-variant-numeric: tabular-nums; }
+  .mD .hex.big .v { font-size: 34px; }
+  .mD .hex .s { font-size: 9px; color: #7d7394; font-variant-numeric: tabular-nums; }
+  .mD .vs { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .mD .nameplate { flex: 1; text-align: center; font-size: 13px; font-weight: 800; padding: 8px 6px; background: linear-gradient(180deg,#221a3d,#171226); border: 1px solid #3a2e5c; border-radius: 6px; position: relative; }
+  .mD .nameplate small { display: block; font-size: 9px; color: #7d7394; font-weight: 700; letter-spacing: .1em; margin-top: 1px; }
+  .mD .vsbadge { flex: none; width: 34px; height: 34px; clip-path: polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%); display: grid; place-items: center; font-size: 12px; font-weight: 900; color: #1a1206; }
+  .mD .meter { height: 8px; border-radius: 4px; background: #241d3d; border: 1px solid #3a2e5c; display: flex; overflow: hidden; margin-bottom: 7px; }
+  .mD .meter i { background: linear-gradient(90deg,#8a5ce6,#c29ffa); }
+  .mD .sp { display: flex; justify-content: center; gap: 14px; font-size: 10px; color: #7d7394; font-variant-numeric: tabular-nums; }
+  .mD .sp b { color: #e8e2f2; }
+  .mD .rec { display: flex; gap: 10px; align-items: center; background: #171226; border: 1px solid #2c2344; border-radius: 8px; padding: 9px 11px; margin-bottom: 7px; }
+  .mD .medal { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-weight: 900; color: #1a1206; flex: none; box-shadow: 0 0 10px rgba(242,202,99,.35); }
+  .mD .medal.lose { background: linear-gradient(160deg,#8d93a8,#4c5266) !important; color: #10131c; box-shadow: none; }
+  .mD .rec .bd { flex: 1; }
+  .mD .rec .m1 { font-size: 13px; font-weight: 800; }
+  .mD .rec .m1 span { color: #7d7394; font-weight: 600; margin: 0 4px; }
+  .mD .rec .m2 { font-size: 10px; color: #7d7394; margin-top: 2px; }
+  .mD .gembtn { display: block; text-align: center; font-size: 14.5px; font-weight: 900; letter-spacing: .22em; padding: 15px; color: #2a1a04; border-radius: 12px; background: linear-gradient(180deg,#f7dc8a 0%,#e3b74f 45%,#c1912f 55%,#f2ca63 100%); box-shadow: 0 3px 0 #8f6a1e, 0 6px 18px rgba(242,202,99,.35), inset 0 1px 0 rgba(255,255,255,.7); }
+
+  /* ============ A3: バトルカード ============ */
+  .mE { background: #0a0d16 linear-gradient(180deg,#101528 0%,#0a0d16 40%); color: #dfe6f2; padding: 18px 14px 26px; }
+  .mE .hd { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; }
+  .mE .hd h1 { font-size: 16px; font-weight: 900; letter-spacing: .04em; }
+  .mE .hd h1 em { font-style: normal; background: linear-gradient(90deg,#65e0ff,#a78bfa,#ff8fc0); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .mE .hd .n { font-size: 11px; color: #59647d; font-weight: 700; }
+  .mE .tabs { display: flex; gap: 14px; border-bottom: 1px solid #1d2438; margin-bottom: 16px; }
+  .mE .tabs b { font-size: 12px; font-weight: 800; color: #59647d; padding: 9px 2px; }
+  .mE .tabs b.on { color: #fff; box-shadow: inset 0 -2px 0 #65e0ff; }
+  .mE .duel { display: flex; gap: 10px; align-items: stretch; margin-bottom: 14px; }
+  .mE .pcard { flex: 1; position: relative; border-radius: 12px; padding: 2px; background: linear-gradient(150deg,#65e0ff,#a78bfa 45%,#22304e); }
+  .mE .pcard.foe { background: linear-gradient(150deg,#ff8fc0,#a78bfa 45%,#22304e); }
+  .mE .pcard .inner { background: #10182b; border-radius: 10px; padding: 12px 10px 10px; height: 100%; text-align: center; }
+  .mE .pcard .role { font-size: 8.5px; font-weight: 800; letter-spacing: .2em; color: #59647d; }
+  .mE .pcard .nm { font-size: 14.5px; font-weight: 900; margin: 4px 0 6px; }
+  .mE .pcard .art { height: 52px; border-radius: 6px; margin-bottom: 8px; background:
+      repeating-linear-gradient(135deg, rgba(255,255,255,.06) 0 2px, transparent 2px 6px),
+      linear-gradient(150deg,#1d2c4d,#101a33); border: 1px solid #253356; display: grid; place-items: center; font-size: 20px; }
+  .mE .pcard .stat { font-size: 10px; color: #8ea2c4; font-variant-numeric: tabular-nums; }
+  .mE .pcard .stat b { color: #fff; font-size: 13px; }
+  .mE .vsflash { align-self: center; flex: none; font-size: 15px; font-weight: 900; font-style: italic; color: #fff; text-shadow: 0 0 14px rgba(101,224,255,.8); }
+  .mE .board { background: #10182b; border: 1px solid #1d2438; border-radius: 12px; padding: 13px; margin-bottom: 11px; }
+  .mE .ct { font-size: 11px; font-weight: 800; letter-spacing: .14em; color: #59647d; margin-bottom: 11px; }
+  .mE .tiles { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+  .mE .tile { text-align: center; background: #0c1322; border: 1px solid #1d2438; border-radius: 9px; padding: 10px 6px; }
+  .mE .tile .k { font-size: 9.5px; font-weight: 800; color: #59647d; letter-spacing: .1em; }
+  .mE .tile .v { font-size: 24px; font-weight: 900; font-variant-numeric: tabular-nums; }
+  .mE .tile.hero .v { font-size: 28px; background: linear-gradient(90deg,#65e0ff,#a78bfa); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .mE .tile .s { font-size: 9.5px; color: #59647d; font-variant-numeric: tabular-nums; }
+  .mE .duellog { position: relative; border-radius: 10px; padding: 1.5px; margin-bottom: 8px; background: linear-gradient(120deg,#2ee6a8, #22304e 40%); }
+  .mE .duellog.lose { background: linear-gradient(120deg,#ff5c7a, #22304e 40%); }
+  .mE .duellog .in { display: flex; gap: 10px; align-items: center; background: #0f1626; border-radius: 9px; padding: 10px 12px; }
+  .mE .duellog .badge { flex: none; font-size: 10px; font-weight: 900; letter-spacing: .1em; padding: 4px 8px; border-radius: 5px; color: #05261a; background: #2ee6a8; }
+  .mE .duellog.lose .badge { background: #ff5c7a; color: #330812; }
+  .mE .duellog .bd { flex: 1; }
+  .mE .duellog .m1 { font-size: 13px; font-weight: 800; }
+  .mE .duellog .m1 span { color: #59647d; font-weight: 600; margin: 0 4px; }
+  .mE .duellog .m2 { font-size: 10px; color: #59647d; margin-top: 2px; }
+  .mE .btn { display: block; text-align: center; font-size: 14px; font-weight: 900; letter-spacing: .14em; padding: 14px; color: #061018; border-radius: 12px; background: linear-gradient(90deg,#65e0ff,#a78bfa); box-shadow: 0 4px 20px rgba(101,224,255,.35); }
+</style>
+</head>
+<body>
+
+<div class="intro">
+  <h1>ラウンド2：A案 × カードゲーム風</h1>
+  <p>お気に入りいただいた<strong>A案（ネオンアリーナ）を基準</strong>に、「カードゲーム風」を強めた2案を追加しました。比較しながら見てください。</p>
+</div>
+
+<nav class="jump">
+  <a href="#caseA">A: 基準</a>
+  <a href="#caseA2">A2: デュエルHUD</a>
+  <a href="#caseA3">A3: バトルカード</a>
+</nav>
+
+<!-- ============ 基準 A ============ -->
+<section class="case" id="caseA">
+  <div class="label">
+    <span class="tag">基準 A</span>
+    <h2>ネオンアリーナ（ラウンド1のまま）</h2>
+    <p>比較用に再掲。eスポーツのランクマ画面風。</p>
+  </div>
+  <div class="phone">
+    <div class="mA">
+      <div class="hd"><h1>SENSEKI<span>_LOG</span></h1><span class="n">TOTAL 128</span></div>
+      <div class="tabs"><b>記録</b><b>履歴</b><b class="on">戦績</b><b>メモ</b><b>助言</b></div>
+      <div class="tiles">
+        <div class="tile hero"><div class="k">WIN RATE</div><div class="v">63<span style="font-size:16px">%</span></div><div class="s">81勝 47敗</div></div>
+        <div class="tile"><div class="k">先攻</div><div class="v">68</div><div class="s">42-20</div></div>
+        <div class="tile"><div class="k">後攻</div><div class="v">59</div><div class="s">39-27</div></div>
+      </div>
+      <div class="card">
+        <div class="ct">MATCHUP // 対戦リーダー別</div>
+        <div class="mu">
+          <div class="row1"><span class="nm">黒ティーチ</span><span class="rt">44%</span></div>
+          <div class="meter"><i style="width:44%"></i></div>
+          <div class="sp"><span>先攻 <b>50%</b> (8-8)</span><span>後攻 <b>38%</b> (5-8)</span><span>29戦</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ct">RECENT // 直近の対戦</div>
+        <div class="rec"><span class="wl">W</span><div class="bd"><div class="m1">赤紫ルフィ<span>vs</span>黒ティーチ</div><div class="m2">先攻・じゃんけん◯・8/11</div></div></div>
+        <div class="rec l"><span class="wl">L</span><div class="bd"><div class="m1">赤紫ルフィ<span>vs</span>青ドフラ</div><div class="m2">後攻・じゃんけん×・8/11 — 序盤のライフ管理をミス</div></div></div>
+      </div>
+      <span class="btn">RECORD ▸</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ A2 ============ -->
+<section class="case" id="caseA2">
+  <div class="label">
+    <span class="tag">案A2</span>
+    <h2>デュエルHUD（カードゲームアプリの対戦画面風）</h2>
+    <p>金の装飾枠・六角形の宝石ステータス・ゴールドの「決定ボタン」。シャドバ/ハースストーン系の豪華なゲームUI。勝ち＝金メダル、負け＝銀メダル。</p>
+  </div>
+  <div class="phone">
+    <div class="mD">
+      <div class="hd"><h1 class="goldtx">戦 績 録</h1><div class="n">TOTAL BATTLE 128</div></div>
+      <div class="tabs"><b>記録</b><b>履歴</b><b class="on">戦績</b><b>メモ</b><b>助言</b></div>
+
+      <div class="frame">
+        <i class="corner c1"></i><i class="corner c2"></i><i class="corner c3"></i><i class="corner c4"></i>
+        <div class="ct">◆ BATTLE RECORD ◆</div>
+        <div class="hexrow">
+          <div class="hex"><div class="in"><div><div class="k">先攻</div><div class="v">68<span style="font-size:12px">%</span></div><div class="s">42-20</div></div></div></div>
+          <div class="hex big gold"><div class="in"><div><div class="k goldtx" style="font-weight:900">勝率</div><div class="v goldtx">63<span style="font-size:15px">%</span></div><div class="s">81勝47敗</div></div></div></div>
+          <div class="hex"><div class="in"><div><div class="k">後攻</div><div class="v">59<span style="font-size:12px">%</span></div><div class="s">39-27</div></div></div></div>
+        </div>
+      </div>
+
+      <div class="frame">
+        <div class="ct">◆ 対戦リーダー別 ◆</div>
+        <div class="vs">
+          <div class="nameplate">赤紫ルフィ<small>YOUR LEADER</small></div>
+          <div class="vsbadge gold">VS</div>
+          <div class="nameplate">黒ティーチ<small>29 BATTLES</small></div>
+        </div>
+        <div class="meter"><i style="width:44%"></i></div>
+        <div class="sp"><span>勝率 <b>44%</b></span><span>先攻 <b>50%</b> (8-8)</span><span>後攻 <b>38%</b> (5-8)</span></div>
+      </div>
+
+      <div class="frame">
+        <div class="ct">◆ 直近の対戦 ◆</div>
+        <div class="rec"><span class="medal gold">WIN</span><div class="bd"><div class="m1">赤紫ルフィ<span>vs</span>黒ティーチ</div><div class="m2">先攻・じゃんけん◯・8/11</div></div></div>
+        <div class="rec"><span class="medal lose gold">LOSE</span><div class="bd"><div class="m1">赤紫ルフィ<span>vs</span>青ドフラ</div><div class="m2">後攻・じゃんけん×・8/11 — 序盤のライフ管理をミス</div></div></div>
+      </div>
+
+      <span class="gembtn">⚔ 対戦を記録する</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ A3 ============ -->
+<section class="case" id="caseA3">
+  <div class="label">
+    <span class="tag">案A3</span>
+    <h2>バトルカード（カードのVS対決として見せる）</h2>
+    <p>リーダー同士を「ホロ加工のカード」として向かい合わせるTCGコレクション風。勝敗はカード枠の光（緑=勝ち/赤=負け）で表現。Aのネオン感も残したハイブリッド。</p>
+  </div>
+  <div class="phone">
+    <div class="mE">
+      <div class="hd"><h1>戦績<em>デッキ</em></h1><span class="n">128戦</span></div>
+      <div class="tabs"><b>記録</b><b>履歴</b><b class="on">戦績</b><b>メモ</b><b>アドバイス</b></div>
+
+      <div class="duel">
+        <div class="pcard">
+          <div class="inner">
+            <div class="role">YOUR LEADER</div>
+            <div class="nm">赤紫ルフィ</div>
+            <div class="art">🏴‍☠️</div>
+            <div class="stat">勝率 <b>63%</b> ・ 128戦</div>
+          </div>
+        </div>
+        <div class="vsflash">VS</div>
+        <div class="pcard foe">
+          <div class="inner">
+            <div class="role">MATCHUP</div>
+            <div class="nm">黒ティーチ</div>
+            <div class="art">⚔️</div>
+            <div class="stat">勝率 <b>44%</b> ・ 29戦</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="board">
+        <div class="ct">STATS ─ この対面</div>
+        <div class="tiles">
+          <div class="tile hero"><div class="k">勝率</div><div class="v">44<span style="font-size:13px">%</span></div><div class="s">13勝16敗</div></div>
+          <div class="tile"><div class="k">先攻</div><div class="v">50</div><div class="s">8-8</div></div>
+          <div class="tile"><div class="k">後攻</div><div class="v">38</div><div class="s">5-8</div></div>
+        </div>
+      </div>
+
+      <div class="board">
+        <div class="ct">DUEL LOG ─ 直近の対戦</div>
+        <div class="duellog"><div class="in"><span class="badge">WIN</span><div class="bd"><div class="m1">赤紫ルフィ<span>vs</span>黒ティーチ</div><div class="m2">先攻・じゃんけん◯・8/11</div></div></div></div>
+        <div class="duellog lose"><div class="in"><span class="badge">LOSE</span><div class="bd"><div class="m1">赤紫ルフィ<span>vs</span>青ドフラ</div><div class="m2">後攻・じゃんけん×・8/11 — 序盤のライフ管理をミス</div></div></div></div>
+      </div>
+
+      <span class="btn">＋ 対戦を記録</span>
+    </div>
+  </div>
+</section>
+
+<div class="foot">
+  <b>次の決め方：</b>「A2の金枠は好きだけど紫は変えたい」「A3のVSカードを戦績タブだけに使って、他はAのまま」など、<b>部分ごとの組み合わせ指定もOK</b>です。方向が決まったらラウンド3で全画面をその路線で作り込みます。
+</div>
+
+</body>
+</html>
