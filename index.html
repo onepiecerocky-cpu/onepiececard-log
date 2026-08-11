@@ -1,0 +1,1722 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="戦績ノート">
+<meta name="theme-color" content="#0e1620">
+<title>ワンピカード 戦績ノート</title>
+<style>*{box-sizing:border-box}html,body{margin:0;padding:0}</style>
+</head>
+<body>
+<title>ワンピカード 戦績ノート</title>
+<style>
+  :root {
+    --bg: #eef1f4;
+    --surface: #ffffff;
+    --surface-2: #f5f7f9;
+    --ink: #16202e;
+    --muted: #5c6b7a;
+    --line: #dfe4ea;
+    --accent: #b9822a;
+    --accent-soft: #f2e6cf;
+    --win: #1f8a5b;
+    --win-soft: #dbeee4;
+    --loss: #c1443c;
+    --loss-soft: #f4dedc;
+    --shadow: 0 1px 2px rgba(22,32,46,.06), 0 8px 24px rgba(22,32,46,.06);
+    --radius: 14px;
+    --font: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", system-ui, sans-serif;
+    --mono: "SF Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0e1620;
+      --surface: #172230;
+      --surface-2: #1d2a3a;
+      --ink: #e8edf2;
+      --muted: #8a9bac;
+      --line: #2a3a4d;
+      --accent: #e0a648;
+      --accent-soft: #33291a;
+      --win: #37b47d;
+      --win-soft: #163529;
+      --loss: #e06a62;
+      --loss-soft: #37201e;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #eef1f4; --surface: #ffffff; --surface-2: #f5f7f9; --ink: #16202e;
+    --muted: #5c6b7a; --line: #dfe4ea; --accent: #b9822a; --accent-soft: #f2e6cf;
+    --win: #1f8a5b; --win-soft: #dbeee4; --loss: #c1443c; --loss-soft: #f4dedc;
+    --shadow: 0 1px 2px rgba(22,32,46,.06), 0 8px 24px rgba(22,32,46,.06);
+  }
+  :root[data-theme="dark"] {
+    --bg: #0e1620; --surface: #172230; --surface-2: #1d2a3a; --ink: #e8edf2;
+    --muted: #8a9bac; --line: #2a3a4d; --accent: #e0a648; --accent-soft: #33291a;
+    --win: #37b47d; --win-soft: #163529; --loss: #e06a62; --loss-soft: #37201e;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; }
+  .app {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    padding-bottom: 40px;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 0 16px; }
+
+  header.top {
+    padding: 22px 16px 14px;
+    max-width: 720px; margin: 0 auto;
+    display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+  }
+  header.top h1 {
+    margin: 0; font-size: 20px; font-weight: 800; letter-spacing: .01em;
+    display: flex; align-items: center; gap: 9px;
+  }
+  header.top h1 .flag {
+    width: 22px; height: 22px; border-radius: 6px; flex: none;
+    background: linear-gradient(135deg, var(--accent), #8a5f18);
+    display: grid; place-items: center; color: #fff; font-size: 13px; font-weight: 900;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.25);
+  }
+  header.top .sub { font-size: 12px; color: var(--muted); font-weight: 600; }
+
+  nav.tabs {
+    position: sticky; top: 0; z-index: 20;
+    background: color-mix(in srgb, var(--bg) 82%, transparent);
+    backdrop-filter: saturate(1.4) blur(10px);
+    -webkit-backdrop-filter: saturate(1.4) blur(10px);
+    padding: 8px 16px 10px; margin-bottom: 6px;
+    border-bottom: 1px solid var(--line);
+  }
+  nav.tabs .seg {
+    max-width: 720px; margin: 0 auto;
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px;
+    background: var(--surface-2); padding: 4px; border-radius: 12px;
+    border: 1px solid var(--line);
+  }
+  nav.tabs button {
+    appearance: none; border: 0; background: transparent; cursor: pointer;
+    font-family: inherit; font-size: 12px; font-weight: 700; color: var(--muted);
+    padding: 9px 1px; border-radius: 9px; transition: background .15s, color .15s;
+    white-space: nowrap; letter-spacing: -.02em;
+  }
+  nav.tabs button[aria-selected="true"] {
+    background: var(--surface); color: var(--ink); box-shadow: var(--shadow);
+  }
+
+  section.view { display: none; }
+  section.view.active { display: block; animation: fade .25s ease; }
+  @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) {
+    section.view.active { animation: none; }
+  }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius); box-shadow: var(--shadow);
+    padding: 16px; margin-bottom: 14px;
+  }
+  .card h2 { margin: 0 0 14px; font-size: 15px; font-weight: 800; letter-spacing: .02em; }
+  .card h2 .hint { font-weight: 600; color: var(--muted); font-size: 12px; margin-left: 6px; }
+
+  label.field { display: block; margin-bottom: 14px; }
+  label.field > span.lbl {
+    display: block; font-size: 12px; font-weight: 700; color: var(--muted);
+    margin-bottom: 6px; letter-spacing: .03em;
+  }
+  label.field .field-note { display: block; font-size: 11px; color: var(--accent); margin-top: 6px; line-height: 1.5; font-weight: 600; }
+  input[type="text"], input[type="date"], textarea, select {
+    width: 100%; font-family: inherit; font-size: 15px; color: var(--ink);
+    background: var(--surface-2); border: 1px solid var(--line);
+    border-radius: 10px; padding: 11px 12px; -webkit-appearance: none; appearance: none;
+  }
+  input:focus, textarea:focus, select:focus {
+    outline: 2px solid var(--accent); outline-offset: 1px; border-color: transparent;
+  }
+  textarea { resize: vertical; min-height: 62px; line-height: 1.5; }
+  select {
+    padding-right: 36px; cursor: pointer;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23889099' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+    background-repeat: no-repeat; background-position: right 12px center;
+  }
+  input.leader-new { margin-top: 8px; }
+
+  .seg-choice { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 6px; }
+  .seg-choice.two { grid-template-columns: 1fr 1fr; }
+  .seg-choice input { position: absolute; opacity: 0; pointer-events: none; }
+  .seg-choice label {
+    display: block; text-align: center; padding: 11px 6px; border-radius: 10px;
+    border: 1px solid var(--line); background: var(--surface-2); cursor: pointer;
+    font-size: 14px; font-weight: 700; color: var(--muted); transition: all .15s;
+    user-select: none;
+  }
+  .seg-choice label:active { transform: scale(.98); }
+  .seg-choice input:checked + label {
+    color: #fff; border-color: transparent;
+  }
+  .seg-choice.win input:checked + label { background: var(--win); }
+  .seg-choice.win #r-loss:checked + label { background: var(--loss); }
+  .seg-choice.loss input:checked + label { background: var(--loss); }
+  .seg-choice.neutral input:checked + label { background: var(--ink); color: var(--surface); }
+  .seg-choice input:focus-visible + label { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 460px) { .row2 { grid-template-columns: 1fr; } }
+
+  .btn {
+    appearance: none; font-family: inherit; font-weight: 800; font-size: 15px;
+    border-radius: 11px; padding: 13px 18px; cursor: pointer; border: 1px solid transparent;
+    transition: filter .15s, transform .1s;
+  }
+  .btn:active { transform: translateY(1px); }
+  .btn-primary { background: var(--accent); color: #fff; width: 100%; box-shadow: var(--shadow); }
+  .btn-primary:hover { filter: brightness(1.05); }
+  .btn-ghost { background: var(--surface-2); color: var(--ink); border-color: var(--line); }
+  .btn-row { display: flex; gap: 10px; }
+  .btn-row .btn { flex: 1; }
+
+  .toggle-line { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .switch { position: relative; width: 50px; height: 30px; flex: none; }
+  .switch input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+  .switch .track {
+    position: absolute; inset: 0; background: var(--line); border-radius: 999px; transition: background .18s;
+  }
+  .switch .track::after {
+    content: ""; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px;
+    background: #fff; border-radius: 50%; transition: transform .18s; box-shadow: 0 1px 3px rgba(0,0,0,.3);
+  }
+  .switch input:checked + .track { background: var(--win); }
+  .switch input:checked + .track::after { transform: translateX(20px); }
+  .switch input:focus-visible + .track { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* history filters */
+  .hist-filters { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 10px; margin-bottom: 14px; }
+  .hist-filters label { display: block; }
+  .hist-filters label > span { display: block; font-size: 11px; font-weight: 700; color: var(--muted); margin-bottom: 4px; letter-spacing: .03em; }
+  .hist-filters select { font-size: 14px; padding: 9px 30px 9px 10px; font-weight: 600; }
+  .hf-clear {
+    grid-column: 1 / -1; appearance: none; font-family: inherit; font-size: 12px; font-weight: 700;
+    color: var(--accent); background: transparent; border: 1px dashed var(--accent);
+    border-radius: 9px; padding: 8px; cursor: pointer;
+  }
+  .hf-clear:hover { background: var(--accent-soft); }
+
+  /* records list */
+  .rec {
+    display: flex; align-items: flex-start; gap: 10px; padding: 11px 12px;
+    border: 1px solid var(--line); border-radius: 11px; background: var(--surface-2);
+    margin-bottom: 8px; width: 100%; text-align: left; cursor: pointer;
+    font-family: inherit; color: var(--ink); appearance: none;
+    transition: border-color .12s, background .12s;
+  }
+  .rec:hover { border-color: var(--accent); }
+  .rec:active { transform: scale(.995); }
+  .rec:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .rec .chev { flex: none; align-self: center; color: var(--muted); font-size: 20px; line-height: 1; font-weight: 700; }
+  .rec .res {
+    flex: none; width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center;
+    font-weight: 900; font-size: 13px; color: #fff;
+  }
+  .rec .res.win { background: var(--win); }
+  .rec .res.loss { background: var(--loss); }
+  .rec .body { flex: 1; min-width: 0; }
+  .rec .matchup { font-size: 14px; font-weight: 700; }
+  .rec .matchup .vs { color: var(--muted); font-weight: 600; margin: 0 5px; }
+  .rec .meta { font-size: 11px; color: var(--muted); margin-top: 2px; display: flex; gap: 8px; flex-wrap: wrap; }
+  .rec .meta .tag { background: var(--surface); border: 1px solid var(--line); border-radius: 5px; padding: 0 5px; }
+  .rec .note { display: flex; gap: 6px; margin-top: 6px; font-size: 12px; line-height: 1.55; }
+  .rec .note .nlabel {
+    flex: none; font-size: 9.5px; font-weight: 800; letter-spacing: .04em; color: var(--muted);
+    background: var(--surface); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; margin-top: 1px; height: fit-content;
+  }
+  .rec .note .ntext { flex: 1; min-width: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .rec .note.memo .ntext { color: var(--muted); }
+  .rec .note.point .nlabel { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); background: var(--accent-soft); }
+  .rec .note.point .ntext { color: var(--ink); }
+  .rec .del {
+    flex: none; appearance: none; border: 0; background: transparent; color: var(--muted);
+    font-size: 18px; cursor: pointer; padding: 4px 8px; border-radius: 8px; line-height: 1;
+  }
+  .rec .del:hover { background: var(--loss-soft); color: var(--loss); }
+
+  /* stats */
+  .leader-pick { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .leader-pick select { flex: 1; font-weight: 700; }
+  .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px; }
+  .tile {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+    padding: 13px 12px; box-shadow: var(--shadow); text-align: center;
+  }
+  .tile .k { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: .04em; }
+  .tile .v { font-family: var(--mono); font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; margin: 3px 0 1px; letter-spacing: -.02em; }
+  .tile .n { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .tile.hero .v { color: var(--accent); font-size: 30px; }
+
+  .meter { height: 8px; border-radius: 5px; background: var(--loss-soft); overflow: hidden; display: flex; }
+  .meter .fill { background: var(--win); height: 100%; }
+  .meter.mini { height: 6px; }
+
+  .mu {
+    display: block; width: 100%; text-align: left; font-family: inherit; color: var(--ink);
+    border: 1px solid var(--line); border-radius: 12px; background: var(--surface); padding: 12px 13px;
+    margin-bottom: 9px; box-shadow: var(--shadow); cursor: pointer; appearance: none;
+    transition: border-color .12s, transform .1s;
+  }
+  .mu:hover { border-color: var(--accent); }
+  .mu:active { transform: scale(.996); }
+  .mu:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .mu .mu-go { display: flex; align-items: center; justify-content: flex-end; gap: 2px; margin-top: 10px; font-size: 11px; font-weight: 700; color: var(--accent); }
+  .mu .mu-go .chev { font-size: 15px; line-height: 1; }
+  .mu .head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 7px; }
+  .mu .name { font-size: 14px; font-weight: 800; }
+  .mu .rec-line { font-family: var(--mono); font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .mu .rate { font-family: var(--mono); font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums; }
+  .mu .splits { display: flex; gap: 14px; margin-top: 9px; font-size: 11px; color: var(--muted); }
+  .mu .splits .s { flex: 1; }
+  .mu .splits .s .top { display: flex; justify-content: space-between; margin-bottom: 4px; font-weight: 600; }
+  .mu .splits .s .top b { color: var(--ink); font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+  .empty { text-align: center; color: var(--muted); font-size: 13px; padding: 26px 10px; line-height: 1.6; }
+
+  /* advice */
+  .adv {
+    border: 1px solid var(--line); border-left-width: 4px; border-radius: 11px;
+    background: var(--surface); padding: 13px 14px; margin-bottom: 10px; box-shadow: var(--shadow);
+    font-size: 13.5px; line-height: 1.6;
+  }
+  .adv .h { font-weight: 800; font-size: 13px; margin-bottom: 4px; display: flex; align-items: center; gap: 7px; }
+  .adv .h .ic { font-size: 15px; }
+  .adv.warn { border-left-color: var(--loss); }
+  .adv.warn .h { color: var(--loss); }
+  .adv.good { border-left-color: var(--win); }
+  .adv.good .h { color: var(--win); }
+  .adv.tip { border-left-color: var(--accent); }
+  .adv.tip .h { color: var(--accent); }
+  .adv.info { border-left-color: var(--muted); }
+  .adv b.data { font-family: var(--mono); font-variant-numeric: tabular-nums; color: var(--ink); }
+  .adv .memos { margin-top: 9px; display: flex; flex-direction: column; gap: 6px; }
+  .adv .memos .m {
+    font-size: 12.5px; line-height: 1.5; color: var(--ink);
+    background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px;
+    padding: 7px 10px; position: relative;
+  }
+  .adv .memos .m .mmeta { display: block; font-size: 10.5px; color: var(--muted); font-weight: 700; margin-bottom: 2px; font-variant-numeric: tabular-nums; }
+  .adv .memos .m .mres { color: var(--loss); }
+  .adv .memos .m .mres.win { color: var(--win); }
+
+  .foot-tools { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); }
+  .foot-tools .btn-row { margin-bottom: 8px; }
+  .foot-tools p { font-size: 11px; color: var(--muted); text-align: center; margin: 6px 0 0; line-height: 1.5; }
+
+  .btn-danger { background: transparent; color: var(--loss); border-color: var(--loss); }
+  .btn-danger:hover { background: var(--loss-soft); }
+
+  /* memo (leader strategy notebook) */
+  .memo-top { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .memo-top select { flex: 1; font-weight: 700; }
+  .memo-topbtn { flex: none; width: auto; padding: 11px 14px; font-size: 14px; }
+  .msec { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); padding: 14px; margin-bottom: 12px; }
+  .msec-head { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .msec-oppo { flex: 1; min-width: 0; }
+  .msec-oppo .vslabel { font-size: 10px; font-weight: 800; color: var(--muted); letter-spacing: .06em; margin-bottom: 4px; display: block; }
+  .msec-actions { flex: none; display: flex; gap: 4px; }
+  .msec-act {
+    appearance: none; border: 1px solid var(--line); background: var(--surface-2); color: var(--muted);
+    width: 32px; height: 32px; border-radius: 8px; font-size: 15px; cursor: pointer; line-height: 1;
+    display: grid; place-items: center;
+  }
+  .msec-act:hover { color: var(--ink); border-color: var(--accent); }
+  .msec-act.del:hover { color: var(--loss); border-color: var(--loss); background: var(--loss-soft); }
+  .msec-act:disabled { opacity: .35; cursor: default; }
+  .msec .field { margin-bottom: 12px; }
+  .msec .field:last-child { margin-bottom: 0; }
+  .points { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
+  .pt { display: flex; align-items: center; gap: 8px; }
+  .pt .dot { flex: none; color: var(--accent); font-weight: 900; font-size: 16px; line-height: 1; }
+  .pt .pt-in { flex: 1; }
+  .pt .pt-del {
+    flex: none; appearance: none; border: 0; background: transparent; color: var(--muted);
+    font-size: 15px; cursor: pointer; padding: 6px 8px; border-radius: 8px; line-height: 1;
+  }
+  .pt .pt-del:hover { color: var(--loss); background: var(--loss-soft); }
+  .btn-add {
+    appearance: none; width: 100%; font-family: inherit; font-weight: 700; font-size: 13px;
+    color: var(--muted); background: transparent; border: 1px dashed var(--line);
+    border-radius: 10px; padding: 10px; cursor: pointer;
+  }
+  .btn-add:hover { color: var(--accent); border-color: var(--accent); }
+  .btn-addsec { margin-top: 2px; padding: 13px; font-size: 14px; }
+  .msec.common { border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); background: color-mix(in srgb, var(--accent) 5%, var(--surface)); }
+  .msec.common .oppo-name { color: var(--accent); }
+  /* saved (read-only) section */
+  .msec.saved { border-color: color-mix(in srgb, var(--win) 34%, var(--line)); }
+  .msec.common.saved { border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); }
+  .msec .oppo-name { font-size: 16px; font-weight: 800; color: var(--ink); }
+  .msec .oppo-name.empty-val { color: var(--muted); font-weight: 700; }
+  .view-field { margin-bottom: 12px; }
+  .view-field .lbl { display: block; font-size: 12px; font-weight: 700; color: var(--muted); margin-bottom: 4px; letter-spacing: .03em; }
+  .vval { font-size: 14px; line-height: 1.6; color: var(--ink); }
+  .vval.pre { white-space: pre-wrap; }
+  .vval.empty-val { color: var(--muted); }
+  .vpoints { margin: 0; padding-left: 1.15em; }
+  .vpoints li { font-size: 14px; line-height: 1.6; margin-bottom: 2px; }
+  .vpoints li::marker { color: var(--accent); }
+
+  .modal-backdrop {
+    position: fixed; inset: 0; z-index: 60;
+    background: rgba(10, 16, 24, .5); backdrop-filter: blur(2px);
+    display: flex; align-items: flex-end; justify-content: center;
+    padding: 0; animation: fade .18s ease;
+  }
+  .modal-backdrop[hidden] { display: none; }
+  .modal {
+    background: var(--surface); width: 100%; max-width: 560px;
+    border-radius: 18px 18px 0 0; box-shadow: 0 -8px 40px rgba(0,0,0,.35);
+    padding: 18px 18px 24px; max-height: 92vh; overflow-y: auto;
+    animation: slideUp .22s ease;
+  }
+  @keyframes slideUp { from { transform: translateY(24px); } to { transform: none; } }
+  @media (min-width: 560px) {
+    .modal-backdrop { align-items: center; padding: 20px; }
+    .modal { border-radius: 18px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .modal, .modal-backdrop { animation: none; }
+  }
+  .modal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .modal-head h2 { margin: 0; font-size: 16px; font-weight: 800; }
+  .modal-x {
+    appearance: none; border: 0; background: var(--surface-2); color: var(--muted);
+    width: 32px; height: 32px; border-radius: 9px; font-size: 15px; cursor: pointer; line-height: 1;
+  }
+  .modal-x:hover { color: var(--ink); }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(20px);
+    background: var(--ink); color: var(--surface); padding: 11px 18px; border-radius: 10px;
+    font-size: 13px; font-weight: 700; box-shadow: 0 8px 30px rgba(0,0,0,.3);
+    opacity: 0; pointer-events: none; transition: all .25s; z-index: 50;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+
+<div class="app">
+  <header class="top">
+    <h1><span class="flag">海</span>ワンピカード 戦績ノート</h1>
+    <span class="sub" id="totalCount">0 戦</span>
+  </header>
+
+  <nav class="tabs">
+    <div class="seg" role="tablist">
+      <button role="tab" aria-selected="true" data-view="record">記録</button>
+      <button role="tab" aria-selected="false" data-view="history">履歴</button>
+      <button role="tab" aria-selected="false" data-view="stats">戦績</button>
+      <button role="tab" aria-selected="false" data-view="memo">メモ</button>
+      <button role="tab" aria-selected="false" data-view="advice">アドバイス</button>
+    </div>
+  </nav>
+
+  <div class="wrap">
+    <!-- RECORD -->
+    <section class="view active" id="view-record">
+      <div class="card">
+        <h2>対戦を記録<span class="hint">試合後にサッと入力</span></h2>
+        <form id="recForm">
+          <label class="field">
+            <span class="lbl">日付</span>
+            <input type="date" id="f-date" required>
+          </label>
+
+          <label class="field">
+            <span class="lbl">使用リーダー（自分）</span>
+            <select id="f-my-sel"></select>
+            <input type="text" id="f-my-new" class="leader-new" placeholder="新しいリーダー名を入力" autocomplete="off" style="display:none;">
+          </label>
+
+          <label class="field">
+            <span class="lbl">対戦相手のリーダー</span>
+            <select id="f-opp-sel"></select>
+            <input type="text" id="f-opp-new" class="leader-new" placeholder="新しいリーダー名を入力" autocomplete="off" style="display:none;">
+          </label>
+
+          <label class="field">
+            <span class="lbl">じゃんけん</span>
+            <div class="seg-choice two neutral">
+              <input type="radio" name="janken" id="jk-win" value="win" checked>
+              <label for="jk-win">勝ち</label>
+              <input type="radio" name="janken" id="jk-lose" value="lose">
+              <label for="jk-lose">負け</label>
+            </div>
+          </label>
+
+          <label class="field">
+            <span class="lbl">先攻 / 後攻</span>
+            <div class="seg-choice two neutral">
+              <input type="radio" name="turn" id="t-first" value="first" checked>
+              <label for="t-first">先攻</label>
+              <input type="radio" name="turn" id="t-second" value="second">
+              <label for="t-second">後攻</label>
+            </div>
+          </label>
+
+          <label class="field">
+            <span class="lbl">結果</span>
+            <div class="seg-choice two win" id="resultGroup">
+              <input type="radio" name="result" id="r-win" value="win" checked>
+              <label for="r-win">勝ち</label>
+              <input type="radio" name="result" id="r-loss" value="loss">
+              <label for="r-loss">負け</label>
+            </div>
+          </label>
+
+          <label class="field">
+            <span class="lbl">メモ<span style="font-weight:600;color:var(--muted)">（任意）</span></span>
+            <textarea id="f-memo" placeholder="意識したこと・キープ基準・反省など"></textarea>
+          </label>
+
+          <label class="field">
+            <span class="lbl">ポイント<span style="font-weight:600;color:var(--muted)">（任意）</span></span>
+            <textarea id="f-point" placeholder="この対面で残したい攻略ポイント（改行で複数可）"></textarea>
+            <span class="field-note">メモタブの「この相手」の攻略メモに自動で追加されます（ページ・対面が無ければ自動作成）</span>
+          </label>
+
+          <button type="submit" class="btn btn-primary" id="submitBtn">記録する</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- HISTORY -->
+    <section class="view" id="view-history">
+      <div class="card" id="recentAnchor">
+        <h2>記録した対戦<span class="hint">新しい順・タップで編集<span id="recentCount"></span></span></h2>
+        <div class="hist-filters">
+          <label><span>使用リーダー</span><select id="hf-my"></select></label>
+          <label><span>相手リーダー</span><select id="hf-opp"></select></label>
+          <label><span>勝敗</span>
+            <select id="hf-result">
+              <option value="">すべて</option>
+              <option value="win">勝ち</option>
+              <option value="loss">負け</option>
+            </select>
+          </label>
+          <label><span>先後</span>
+            <select id="hf-turn">
+              <option value="">すべて</option>
+              <option value="first">先攻</option>
+              <option value="second">後攻</option>
+            </select>
+          </label>
+          <button type="button" class="hf-clear" id="hf-clear" style="display:none;">絞り込みを解除</button>
+        </div>
+        <div id="recentList"></div>
+      </div>
+
+      <div class="foot-tools wrap" style="padding:16px 0 0;">
+        <div class="btn-row">
+          <button class="btn btn-ghost" id="exportBtn">バックアップ書き出し</button>
+          <button class="btn btn-ghost" id="importBtn">ファイルで読み込み</button>
+        </div>
+        <div class="btn-row" style="margin-top:8px;">
+          <button class="btn btn-ghost" id="copyBackupBtn">バックアップをコピー</button>
+          <button class="btn btn-ghost" id="pasteImportBtn">貼り付けで読み込み</button>
+        </div>
+        <input type="file" id="importFile" accept="application/json,.json" style="display:none;">
+        <div id="backupPanel" style="display:none; margin-top:10px;">
+          <textarea id="backupArea" readonly style="min-height:120px;"></textarea>
+          <p style="text-align:left;margin:6px 0 0;">自動コピーできない時は、この枠を<b>長押し →「すべて選択」→「コピー」</b>してください。全文をコピーするのが大事です。</p>
+          <div class="btn-row" style="margin-top:8px;">
+            <button class="btn btn-ghost" id="backupClose">閉じる</button>
+            <button class="btn btn-primary" id="backupCopyAgain" style="width:auto;flex:1;">もう一度コピー</button>
+          </div>
+        </div>
+        <div id="pastePanel" style="display:none; margin-top:10px;">
+          <textarea id="pasteArea" placeholder="コピーしたバックアップ（JSON）をここに貼り付け" style="min-height:120px;"></textarea>
+          <div class="btn-row" style="margin-top:8px;">
+            <button class="btn btn-ghost" id="pasteCancel">キャンセル</button>
+            <button class="btn btn-primary" id="pasteApply" style="width:auto;flex:1;">この内容を取り込む</button>
+          </div>
+        </div>
+        <p>データはこの端末のブラウザに保存されます。ダウンロードがうまくいかない時は「バックアップをコピー」→ 別の版で「貼り付けで読み込み」でも移せます。</p>
+
+        <div class="card" style="margin-top:14px;">
+          <h2>クラウド同期（複数端末）<span class="hint" id="syncStatus">オフ</span></h2>
+          <p style="font-size:12px;color:var(--muted);line-height:1.6;margin:0 0 12px;">
+            Firebase の Realtime Database に保存し、全端末で共有します。全端末で<b>同じ同期コード</b>を入れてください。
+          </p>
+          <label class="field">
+            <span class="lbl">Realtime Database URL</span>
+            <input type="text" id="syncUrl" placeholder="https://xxxx-default-rtdb.firebaseio.com" autocomplete="off">
+          </label>
+          <label class="field">
+            <span class="lbl">同期コード（全端末で同じ・秘密の合言葉）</span>
+            <input type="text" id="syncCode" placeholder="例: pixel-luffy-9f3k2" autocomplete="off">
+          </label>
+          <label class="toggle-line" style="margin-bottom:12px;">
+            <span class="lbl" style="margin:0;">クラウド同期を有効にする</span>
+            <span class="switch"><input type="checkbox" id="syncEnabled"><span class="track"></span></span>
+          </label>
+          <div class="btn-row">
+            <button type="button" class="btn btn-ghost" id="syncPullBtn">クラウド→この端末</button>
+            <button type="button" class="btn btn-ghost" id="syncPushBtn">この端末→クラウド</button>
+          </div>
+          <p style="font-size:11px;color:var(--muted);line-height:1.5;margin:10px 0 0;">
+            初回は、データがある端末で「この端末→クラウド」を1回押してアップ。別端末では同じURL・コードを入れて「クラウド→この端末」で取得。以後は自動同期です。
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- STATS -->
+    <section class="view" id="view-stats">
+      <div class="leader-pick">
+        <select id="statsLeader"></select>
+      </div>
+      <div id="statsBody"></div>
+    </section>
+
+    <!-- MEMO (リーダー別 対面攻略メモ) -->
+    <section class="view" id="view-memo">
+      <div class="memo-top">
+        <select id="memoLeader"></select>
+        <button type="button" class="btn btn-ghost memo-topbtn" id="memoAddPage">＋ ページ</button>
+      </div>
+
+      <div class="card" id="memoAddRow" style="display:none;">
+        <h2>リーダーのページを作成</h2>
+        <label class="field">
+          <span class="lbl">リーダー</span>
+          <select id="memoNewSel"></select>
+          <input type="text" id="memoNewText" class="leader-new" placeholder="新しいリーダー名を入力" autocomplete="off" style="display:none;">
+        </label>
+        <div class="btn-row">
+          <button type="button" class="btn btn-ghost" id="memoNewCancel">キャンセル</button>
+          <button type="button" class="btn btn-primary" id="memoNewCreate" style="width:auto;flex:1;">作成する</button>
+        </div>
+      </div>
+
+      <div id="memoBody"></div>
+    </section>
+
+    <!-- ADVICE -->
+    <section class="view" id="view-advice">
+      <div class="leader-pick">
+        <select id="adviceLeader"></select>
+      </div>
+      <div id="adviceBody"></div>
+      <div class="card" style="margin-top:6px;">
+        <h2>もっと深い助言がほしい時</h2>
+        <p style="font-size:13px;color:var(--muted);line-height:1.65;margin:0 0 12px;">
+          下のボタンで戦績サマリー（各試合のメモ本文も含む）をコピーして、Claudeのチャットに貼り付ければ、メモの内容まで踏まえた個別の対策・練習方針を相談できます。
+        </p>
+        <button class="btn btn-ghost" id="copySummary" style="width:100%;">戦績サマリーをコピー</button>
+      </div>
+    </section>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="editModal" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="editModalTitle">
+    <div class="modal-head">
+      <h2 id="editModalTitle">記録を編集</h2>
+      <button type="button" class="modal-x" id="ed-close" aria-label="閉じる">✕</button>
+    </div>
+    <form id="editForm">
+      <input type="hidden" id="ed-id" value="">
+      <label class="field">
+        <span class="lbl">日付</span>
+        <input type="date" id="ed-date" required>
+      </label>
+      <label class="field">
+        <span class="lbl">使用リーダー（自分）</span>
+        <select id="ed-my-sel"></select>
+        <input type="text" id="ed-my-new" class="leader-new" placeholder="新しいリーダー名を入力" autocomplete="off" style="display:none;">
+      </label>
+      <label class="field">
+        <span class="lbl">対戦相手のリーダー</span>
+        <select id="ed-opp-sel"></select>
+        <input type="text" id="ed-opp-new" class="leader-new" placeholder="新しいリーダー名を入力" autocomplete="off" style="display:none;">
+      </label>
+      <label class="field">
+        <span class="lbl">じゃんけん</span>
+        <div class="seg-choice two neutral">
+          <input type="radio" name="ed-janken" id="ed-jk-win" value="win" checked>
+          <label for="ed-jk-win">勝ち</label>
+          <input type="radio" name="ed-janken" id="ed-jk-lose" value="lose">
+          <label for="ed-jk-lose">負け</label>
+        </div>
+      </label>
+      <label class="field">
+        <span class="lbl">先攻 / 後攻</span>
+        <div class="seg-choice two neutral">
+          <input type="radio" name="ed-turn" id="ed-t-first" value="first" checked>
+          <label for="ed-t-first">先攻</label>
+          <input type="radio" name="ed-turn" id="ed-t-second" value="second">
+          <label for="ed-t-second">後攻</label>
+        </div>
+      </label>
+      <label class="field">
+        <span class="lbl">結果</span>
+        <div class="seg-choice two win" id="ed-resultGroup">
+          <input type="radio" name="ed-result" id="ed-r-win" value="win" checked>
+          <label for="ed-r-win">勝ち</label>
+          <input type="radio" name="ed-result" id="ed-r-loss" value="loss">
+          <label for="ed-r-loss">負け</label>
+        </div>
+      </label>
+      <label class="field">
+        <span class="lbl">メモ<span style="font-weight:600;color:var(--muted)">（任意）</span></span>
+        <textarea id="ed-memo" placeholder="意識したこと・キープ基準・反省など"></textarea>
+      </label>
+      <label class="field">
+        <span class="lbl">ポイント<span style="font-weight:600;color:var(--muted)">（任意）</span></span>
+        <textarea id="ed-point" placeholder="この対面で残したい攻略ポイント（改行で複数可）"></textarea>
+        <span class="field-note">メモタブの「この相手」の攻略メモに反映されます（ページ・対面が無ければ自動作成）</span>
+      </label>
+      <button type="submit" class="btn btn-primary">更新する</button>
+      <button type="button" class="btn btn-danger" id="ed-delete" style="width:100%;margin-top:10px;">この記録を削除</button>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  "use strict";
+  var KEY = "optcg_records_v1";
+  var NKEY = "optcg_notebooks_v1";
+  var records = load();
+  var notebooks = loadNotebooks();     // { leaderName: { sections: [ {id,opponent,turnChoice,mulligan,points[]} ] } }
+  var currentMemoLeader = null;
+
+  function load() {
+    try { var r = JSON.parse(localStorage.getItem(KEY)); return Array.isArray(r) ? r : []; }
+    catch (e) { return []; }
+  }
+  function save0() { try { localStorage.setItem(KEY, JSON.stringify(records)); } catch (e) {} }
+  function save() { save0(); schedulePush(); }
+  function loadNotebooks() {
+    try { var n = JSON.parse(localStorage.getItem(NKEY)); return (n && typeof n === "object") ? n : {}; }
+    catch (e) { return {}; }
+  }
+  function saveNotebooks0() { try { localStorage.setItem(NKEY, JSON.stringify(notebooks)); } catch (e) {} }
+  function saveNotebooks() { saveNotebooks0(); schedulePush(); }
+  function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+  function $(s) { return document.querySelector(s); }
+  function todayStr() {
+    var d = new Date(), p = function (n) { return String(n).padStart(2, "0"); };
+    return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
+  }
+  function pct(w, n) { return n ? Math.round((w / n) * 100) : 0; }
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+
+  var toastT;
+  function toast(msg) {
+    var el = $("#toast"); el.textContent = msg; el.classList.add("show");
+    clearTimeout(toastT); toastT = setTimeout(function () { el.classList.remove("show"); }, 1900);
+  }
+
+  /* ---------- tabs ---------- */
+  function switchTab(v) {
+    document.querySelectorAll("nav.tabs button").forEach(function (x) { x.setAttribute("aria-selected", x.dataset.view === v ? "true" : "false"); });
+    document.querySelectorAll("section.view").forEach(function (s) { s.classList.remove("active"); });
+    $("#view-" + v).classList.add("active");
+    if (v === "history") renderRecent();
+    if (v === "stats") renderStats();
+    if (v === "memo") renderMemo();
+    if (v === "advice") renderAdvice();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+  document.querySelectorAll("nav.tabs button").forEach(function (b) {
+    b.addEventListener("click", function () { switchTab(b.dataset.view); });
+  });
+
+  /* ---------- leader dropdowns ---------- */
+  function allLeaders() {
+    var set = {};
+    records.forEach(function (r) { if (r.myLeader) set[r.myLeader] = 1; if (r.oppLeader) set[r.oppLeader] = 1; });
+    return Object.keys(set).sort(function (a, b) { return a.localeCompare(b, "ja"); });
+  }
+  function myLeaders() {
+    var set = {};
+    records.forEach(function (r) { if (r.myLeader) set[r.myLeader] = 1; });
+    return Object.keys(set).sort(function (a, b) { return a.localeCompare(b, "ja"); });
+  }
+
+  // Fill a form leader <select> with past leaders + "new" option. selVal: value to preselect.
+  function fillLeaderCombo(selId, newId, selVal) {
+    var sel = $(selId), inp = $(newId);
+    var names = allLeaders();
+    var html = '<option value="">— 選択してください —</option>';
+    html += names.map(function (n) { return '<option value="' + esc(n) + '">' + esc(n) + '</option>'; }).join("");
+    html += '<option value="__new__">＋ 新しいリーダーを入力…</option>';
+    sel.innerHTML = html;
+    if (selVal && names.indexOf(selVal) >= 0) {
+      sel.value = selVal; inp.style.display = "none"; inp.value = "";
+    } else if (names.length === 0) {
+      // first-time use: no history yet, go straight to text entry
+      sel.value = "__new__"; inp.style.display = "block";
+    } else {
+      sel.value = ""; inp.style.display = "none"; inp.value = "";
+    }
+  }
+  function refreshLeaderCombos(myVal, oppVal) {
+    fillLeaderCombo("#f-my-sel", "#f-my-new", myVal);
+    fillLeaderCombo("#f-opp-sel", "#f-opp-new", oppVal);
+  }
+  function bindCombo(selId, newId) {
+    $(selId).addEventListener("change", function () {
+      var inp = $(newId);
+      if (this.value === "__new__") { inp.style.display = "block"; inp.focus(); }
+      else { inp.style.display = "none"; inp.value = ""; }
+    });
+  }
+  bindCombo("#f-my-sel", "#f-my-new");
+  bindCombo("#f-opp-sel", "#f-opp-new");
+  bindCombo("#ed-my-sel", "#ed-my-new");
+  bindCombo("#ed-opp-sel", "#ed-opp-new");
+  function comboValue(selId, newId) {
+    var sel = $(selId);
+    return (sel.value === "__new__") ? $(newId).value.trim() : sel.value;
+  }
+
+  /* ---------- new record form (記録タブ・新規専用) ---------- */
+  $("#f-date").value = todayStr();
+
+  $("#recForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var rec = {
+      id: uid(),
+      date: $("#f-date").value,
+      myLeader: comboValue("#f-my-sel", "#f-my-new"),
+      oppLeader: comboValue("#f-opp-sel", "#f-opp-new"),
+      jankenWon: document.querySelector('input[name="janken"]:checked').value === "win",
+      turn: document.querySelector('input[name="turn"]:checked').value,
+      result: document.querySelector('input[name="result"]:checked').value,
+      memo: $("#f-memo").value.trim(),
+      point: $("#f-point").value.trim()
+    };
+    if (!rec.myLeader) { toast("使用リーダーを選んでください"); return; }
+    if (!rec.oppLeader) { toast("対戦相手のリーダーを選んでください"); return; }
+    records.push(rec);
+    save();
+    var added = reflectPointToNotebook(rec.myLeader, rec.oppLeader, $("#f-point").value);
+    resetForm();
+    renderRecent();
+    updateCounts();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    toast(added ? ("記録＋ポイント " + added + " 件をメモに反映 ⚓") : "記録しました ⚓（履歴タブで確認）");
+  });
+
+  // 記録タブのポイントを メモタブ notebooks[使用リーダー] の対面別セクションへ反映
+  function reflectPointToNotebook(my, opp, text) {
+    var lines = String(text || "").split(/\r?\n/).map(function (s) { return s.trim(); }).filter(function (s) { return s; });
+    if (!lines.length) return 0;
+    var nb = notebooks[my] || (notebooks[my] = { common: { points: [], saved: false }, sections: [] });
+    nb.sections = nb.sections || [];
+    var sec = nb.sections.find(function (x) { return x.opponent === opp; });
+    if (!sec) {
+      sec = { id: uid(), opponent: opp, turnChoice: "", mulligan: "", points: [], saved: true };
+      nb.sections.push(sec);
+    }
+    sec.points = sec.points || [];
+    var added = 0;
+    lines.forEach(function (l) { if (sec.points.indexOf(l) < 0) { sec.points.push(l); added++; } });
+    if (added) saveNotebooks();
+    return added;
+  }
+
+  function resetForm() {
+    $("#f-memo").value = "";
+    $("#f-point").value = "";
+    refreshLeaderCombos();
+    $("#jk-win").checked = true; $("#t-first").checked = true; $("#r-win").checked = true;
+    $("#f-date").value = todayStr();
+  }
+
+  /* ---------- edit modal (履歴タブ内で完結) ---------- */
+  var modal = $("#editModal");
+  function openEditModal(id) {
+    var r = records.find(function (x) { return x.id === id; });
+    if (!r) return;
+    $("#ed-id").value = r.id;
+    $("#ed-date").value = r.date;
+    fillLeaderCombo("#ed-my-sel", "#ed-my-new", r.myLeader);
+    fillLeaderCombo("#ed-opp-sel", "#ed-opp-new", r.oppLeader);
+    document.querySelector('input[name="ed-janken"][value="' + (r.jankenWon ? "win" : "lose") + '"]').checked = true;
+    document.querySelector('input[name="ed-turn"][value="' + r.turn + '"]').checked = true;
+    document.querySelector('input[name="ed-result"][value="' + r.result + '"]').checked = true;
+    $("#ed-memo").value = r.memo || "";
+    $("#ed-point").value = r.point || "";
+    modal.hidden = false;
+    document.body.style.overflow = "hidden";
+  }
+  function closeEditModal() {
+    modal.hidden = true;
+    document.body.style.overflow = "";
+  }
+  $("#ed-close").addEventListener("click", closeEditModal);
+  modal.addEventListener("click", function (e) { if (e.target === modal) closeEditModal(); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !modal.hidden) closeEditModal(); });
+
+  $("#editForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var id = $("#ed-id").value;
+    var i = records.findIndex(function (r) { return r.id === id; });
+    if (i < 0) { closeEditModal(); return; }
+    var my = comboValue("#ed-my-sel", "#ed-my-new");
+    var opp = comboValue("#ed-opp-sel", "#ed-opp-new");
+    if (!my) { toast("使用リーダーを選んでください"); return; }
+    if (!opp) { toast("対戦相手のリーダーを選んでください"); return; }
+    records[i] = {
+      id: id,
+      date: $("#ed-date").value,
+      myLeader: my,
+      oppLeader: opp,
+      jankenWon: document.querySelector('input[name="ed-janken"]:checked').value === "win",
+      turn: document.querySelector('input[name="ed-turn"]:checked').value,
+      result: document.querySelector('input[name="ed-result"]:checked').value,
+      memo: $("#ed-memo").value.trim(),
+      point: $("#ed-point").value.trim()
+    };
+    save();
+    var added = reflectPointToNotebook(my, opp, $("#ed-point").value);
+    renderRecent();
+    updateCounts();
+    closeEditModal();
+    toast(added ? ("更新＋ポイント " + added + " 件をメモに反映") : "更新しました");
+  });
+
+  $("#ed-delete").addEventListener("click", function () {
+    var id = $("#ed-id").value;
+    var r = records.find(function (x) { return x.id === id; });
+    if (!r) { closeEditModal(); return; }
+    if (!confirm((r.date + "  " + r.myLeader + " vs " + r.oppLeader) + "\nこの記録を削除しますか？")) return;
+    records = records.filter(function (x) { return x.id !== id; });
+    save();
+    renderRecent();
+    updateCounts();
+    closeEditModal();
+    toast("削除しました");
+  });
+
+  /* ---------- recent list + filters ---------- */
+  var histFilter = { my: "", opp: "", result: "", turn: "" };
+  function sortedDesc() {
+    return records.slice().sort(function (a, b) {
+      if (a.date !== b.date) return a.date < b.date ? 1 : -1;
+      return a.id < b.id ? 1 : -1;
+    });
+  }
+  function oppLeadersAll() {
+    var set = {};
+    records.forEach(function (r) { if (r.oppLeader) set[r.oppLeader] = 1; });
+    return Object.keys(set).sort(function (a, b) { return a.localeCompare(b, "ja"); });
+  }
+  function fillHistSelect(sel, names, val) {
+    var opts = '<option value="">すべて</option>' + names.map(function (n) { return '<option value="' + esc(n) + '">' + esc(n) + '</option>'; }).join("");
+    sel.innerHTML = opts;
+    sel.value = (val && names.indexOf(val) >= 0) ? val : "";
+    if (sel.value !== val) histFilter[sel === $("#hf-my") ? "my" : "opp"] = sel.value;
+  }
+  function fillHistFilters() {
+    fillHistSelect($("#hf-my"), myLeaders(), histFilter.my);
+    fillHistSelect($("#hf-opp"), oppLeadersAll(), histFilter.opp);
+    $("#hf-result").value = histFilter.result;
+    $("#hf-turn").value = histFilter.turn;
+    var active = histFilter.my || histFilter.opp || histFilter.result || histFilter.turn;
+    $("#hf-clear").style.display = active ? "block" : "none";
+  }
+  function applyHistFilter(list) {
+    return list.filter(function (r) {
+      if (histFilter.my && r.myLeader !== histFilter.my) return false;
+      if (histFilter.opp && r.oppLeader !== histFilter.opp) return false;
+      if (histFilter.result && r.result !== histFilter.result) return false;
+      if (histFilter.turn && r.turn !== histFilter.turn) return false;
+      return true;
+    });
+  }
+  function renderRecent() {
+    fillHistFilters();
+    var el = $("#recentList");
+    if (!records.length) {
+      $("#recentCount").textContent = "";
+      el.innerHTML = '<div class="empty">まだ記録がありません。<br>「記録」タブから最初の対戦を記録しましょう。</div>';
+      return;
+    }
+    var list = applyHistFilter(sortedDesc());
+    var filtered = histFilter.my || histFilter.opp || histFilter.result || histFilter.turn;
+    $("#recentCount").textContent = filtered ? ("・" + list.length + " 件 / 全 " + records.length + " 件") : ("・全 " + records.length + " 件");
+    if (!list.length) { el.innerHTML = '<div class="empty">条件に合う記録がありません。<br>絞り込みを変えてみてください。</div>'; return; }
+    el.innerHTML = list.map(function (r) {
+      var win = r.result === "win";
+      return '<button type="button" class="rec" data-edit="' + r.id + '">' +
+        '<div class="res ' + (win ? "win" : "loss") + '">' + (win ? "W" : "L") + '</div>' +
+        '<div class="body">' +
+          '<div class="matchup">' + esc(r.myLeader) + '<span class="vs">vs</span>' + esc(r.oppLeader) + '</div>' +
+          '<div class="meta">' +
+            '<span class="tag">' + (r.turn === "first" ? "先攻" : "後攻") + '</span>' +
+            '<span class="tag">じゃんけん' + (r.jankenWon ? "◯" : "×") + '</span>' +
+            '<span>' + esc(r.date) + '</span>' +
+          '</div>' +
+          (r.memo ? '<div class="note memo"><span class="nlabel">メモ</span><span class="ntext">' + esc(r.memo) + '</span></div>' : '') +
+          (r.point ? '<div class="note point"><span class="nlabel">ポイント</span><span class="ntext">' + esc(r.point) + '</span></div>' : '') +
+        '</div>' +
+        '<span class="chev" aria-hidden="true">›</span>' +
+      '</button>';
+    }).join("");
+    el.querySelectorAll("[data-edit]").forEach(function (b) { b.addEventListener("click", function () { openEditModal(b.dataset.edit); }); });
+  }
+  $("#hf-my").addEventListener("change", function () { histFilter.my = this.value; renderRecent(); });
+  $("#hf-opp").addEventListener("change", function () { histFilter.opp = this.value; renderRecent(); });
+  $("#hf-result").addEventListener("change", function () { histFilter.result = this.value; renderRecent(); });
+  $("#hf-turn").addEventListener("change", function () { histFilter.turn = this.value; renderRecent(); });
+  $("#hf-clear").addEventListener("click", function () { histFilter = { my: "", opp: "", result: "", turn: "" }; renderRecent(); });
+
+  function updateCounts() { $("#totalCount").textContent = records.length + " 戦"; }
+
+  /* ---------- stats computation ---------- */
+  function compute(myFilter) {
+    var rs = records.filter(function (r) { return myFilter === "__all__" || r.myLeader === myFilter; });
+    var agg = function () { return { n: 0, w: 0 }; };
+    var o = { total: agg(), first: agg(), second: agg(), jkWin: agg(), jkLose: agg(), jkWinFirst: agg(), jkWinSecond: agg(), byOpp: {} };
+    rs.forEach(function (r) {
+      var win = r.result === "win";
+      var bump = function (a) { a.n++; if (win) a.w++; };
+      bump(o.total);
+      bump(r.turn === "first" ? o.first : o.second);
+      bump(r.jankenWon ? o.jkWin : o.jkLose);
+      if (r.jankenWon) bump(r.turn === "first" ? o.jkWinFirst : o.jkWinSecond);
+      var op = o.byOpp[r.oppLeader] || (o.byOpp[r.oppLeader] = { total: agg(), first: agg(), second: agg() });
+      bump(op.total); bump(r.turn === "first" ? op.first : op.second);
+    });
+    return o;
+  }
+
+  function fillLeaderSelect(sel, current) {
+    var ls = myLeaders();
+    var opts = '<option value="__all__">すべての使用リーダー</option>';
+    opts += ls.map(function (n) { return '<option value="' + esc(n) + '">' + esc(n) + '</option>'; }).join("");
+    sel.innerHTML = opts;
+    if (current && (current === "__all__" || ls.indexOf(current) >= 0)) sel.value = current;
+  }
+
+  function meter(w, n) {
+    var p = pct(w, n);
+    return '<div class="meter"><div class="fill" style="width:' + p + '%"></div></div>';
+  }
+
+  function renderStats() {
+    fillLeaderSelect($("#statsLeader"), $("#statsLeader").value);
+    var f = $("#statsLeader").value || "__all__";
+    var o = compute(f);
+    var body = $("#statsBody");
+    if (!o.total.n) {
+      body.innerHTML = '<div class="card"><div class="empty">この条件の記録がまだありません。</div></div>';
+      return;
+    }
+    var opps = Object.keys(o.byOpp).map(function (name) {
+      return { name: name, d: o.byOpp[name] };
+    }).sort(function (a, b) {
+      if (b.d.total.n !== a.d.total.n) return b.d.total.n - a.d.total.n; // サンプル数(対戦数)の多い順
+      return a.name.localeCompare(b.name, "ja");
+    });
+
+    var h = '';
+    h += '<div class="tiles">' +
+      '<div class="tile hero"><div class="k">総合勝率</div><div class="v">' + pct(o.total.w, o.total.n) + '<span style="font-size:15px">%</span></div><div class="n">' + o.total.w + '勝 ' + (o.total.n - o.total.w) + '敗 / ' + o.total.n + '戦</div></div>' +
+      '<div class="tile"><div class="k">先攻</div><div class="v">' + pct(o.first.w, o.first.n) + '<span style="font-size:14px">%</span></div><div class="n">' + o.first.w + '-' + (o.first.n - o.first.w) + ' (' + o.first.n + ')</div></div>' +
+      '<div class="tile"><div class="k">後攻</div><div class="v">' + pct(o.second.w, o.second.n) + '<span style="font-size:14px">%</span></div><div class="n">' + o.second.w + '-' + (o.second.n - o.second.w) + ' (' + o.second.n + ')</div></div>' +
+    '</div>';
+
+    h += '<div class="card"><h2>対戦リーダー別<span class="hint">' + opps.length + ' 種類</span></h2>';
+    h += opps.map(function (x) {
+      var d = x.d, n = d.total.n, w = d.total.w;
+      return '<button type="button" class="mu" data-opp="' + esc(x.name) + '">' +
+        '<div class="head"><span class="name">' + esc(x.name) + '</span><span class="rate" style="color:' + rateColor(w, n) + '">' + pct(w, n) + '%</span></div>' +
+        meter(w, n) +
+        '<div class="rec-line" style="margin-top:6px">' + w + '勝 ' + (n - w) + '敗 / ' + n + '戦</div>' +
+        '<div class="splits">' +
+          '<div class="s"><div class="top"><span>先攻</span><b>' + (d.first.n ? pct(d.first.w, d.first.n) + '%' : '—') + '</b></div>' + meterMini(d.first.w, d.first.n) + '<div style="margin-top:3px">' + d.first.w + '-' + (d.first.n - d.first.w) + '</div></div>' +
+          '<div class="s"><div class="top"><span>後攻</span><b>' + (d.second.n ? pct(d.second.w, d.second.n) + '%' : '—') + '</b></div>' + meterMini(d.second.w, d.second.n) + '<div style="margin-top:3px">' + d.second.w + '-' + (d.second.n - d.second.w) + '</div></div>' +
+        '</div>' +
+        '<div class="mu-go">この対面の対戦履歴を見る<span class="chev">›</span></div>' +
+      '</button>';
+    }).join("");
+    h += '</div>';
+    body.innerHTML = h;
+  }
+  // tap a matchup card -> jump to filtered history
+  $("#statsBody").addEventListener("click", function (e) {
+    var el = e.target.closest("[data-opp]");
+    if (!el) return;
+    var my = $("#statsLeader").value;
+    histFilter = { my: (my === "__all__" ? "" : my), opp: el.dataset.opp, result: "", turn: "" };
+    switchTab("history");
+  });
+  function meterMini(w, n) {
+    if (!n) return '<div class="meter mini" style="background:var(--line)"></div>';
+    return '<div class="meter mini"><div class="fill" style="width:' + pct(w, n) + '%"></div></div>';
+  }
+  function rateColor(w, n) {
+    if (!n) return "var(--muted)";
+    var p = pct(w, n);
+    if (p >= 55) return "var(--win)";
+    if (p <= 45) return "var(--loss)";
+    return "var(--ink)";
+  }
+  $("#statsLeader").addEventListener("change", renderStats);
+
+  /* ---------- advice engine ---------- */
+  function renderAdvice() {
+    fillLeaderSelect($("#adviceLeader"), $("#adviceLeader").value);
+    var f = $("#adviceLeader").value || "__all__";
+    var o = compute(f);
+    var body = $("#adviceBody");
+    var scope = f === "__all__" ? "全体" : f;
+    if (o.total.n < 3) {
+      body.innerHTML = '<div class="adv info"><div class="h"><span class="ic">📋</span>データを集めましょう</div>' +
+        (scope === "全体" ? "" : "「" + esc(scope) + "」の") + '記録が <b class="data">' + o.total.n + '</b> 戦です。3戦を超えると傾向の分析を出せます。まずは記録を増やしてみてください。</div>';
+      return;
+    }
+    var cards = [];
+
+    // scope-filtered raw records (for reading memo text)
+    var rs = records.filter(function (r) { return f === "__all__" || r.myLeader === f; });
+    function memoHtml(list) {
+      return '<div class="memos">' + list.map(function (r) {
+        var win = r.result === "win";
+        return '<div class="m"><span class="mmeta">' + esc(r.date) + ' vs ' + esc(r.oppLeader) +
+          ' <span class="mres' + (win ? " win" : "") + '">' + (win ? "○勝ち" : "●負け") + '</span></span>' +
+          esc(r.memo) + '</div>';
+      }).join("") + '</div>';
+    }
+    function memosByDateDesc(arr) {
+      return arr.slice().sort(function (a, b) { return a.date < b.date ? 1 : (a.date > b.date ? -1 : (a.id < b.id ? 1 : -1)); });
+    }
+
+    // overall
+    cards.push({ t: "info", ic: "📊", h: scope + " の全体成績",
+      body: '<b class="data">' + o.total.n + '</b> 戦 <b class="data">' + o.total.w + '</b> 勝 <b class="data">' + (o.total.n - o.total.w) + '</b> 敗、勝率 <b class="data">' + pct(o.total.w, o.total.n) + '%</b>。' });
+
+    // first vs second imbalance
+    if (o.first.n >= 2 && o.second.n >= 2) {
+      var pf = pct(o.first.w, o.first.n), ps = pct(o.second.w, o.second.n), diff = Math.abs(pf - ps);
+      if (diff >= 15) {
+        var better = pf > ps ? "先攻" : "後攻", bp = Math.max(pf, ps), wp = Math.min(pf, ps);
+        cards.push({ t: "tip", ic: "🎲", h: better + "の方が明確に勝てている",
+          body: '先攻 <b class="data">' + pf + '%</b>（' + o.first.n + '戦）に対し後攻 <b class="data">' + ps + '%</b>（' + o.second.n + '戦）。差は <b class="data">' + diff + 'pt</b>。<b>じゃんけんに勝ったら基本は' + better + 'を選ぶ</b>のが数字上は有利です。' });
+      } else {
+        cards.push({ t: "info", ic: "🎲", h: "先後の有利不利は小さめ",
+          body: '先攻 <b class="data">' + pf + '%</b>／後攻 <b class="data">' + ps + '%</b> で差は <b class="data">' + diff + 'pt</b>。先後より対面の対策が勝率を左右していそうです。' });
+      }
+    }
+
+    // janken-win turn choice
+    if (o.jkWinFirst.n >= 2 && o.jkWinSecond.n >= 2) {
+      var jf = pct(o.jkWinFirst.w, o.jkWinFirst.n), js = pct(o.jkWinSecond.w, o.jkWinSecond.n);
+      if (Math.abs(jf - js) >= 15) {
+        var jbetter = jf > js ? "先攻" : "後攻";
+        cards.push({ t: "tip", ic: "✊", h: "じゃんけんに勝ったら " + jbetter + " が正解",
+          body: 'じゃんけん勝ち→先攻 <b class="data">' + jf + '%</b>／→後攻 <b class="data">' + js + '%</b>。選択権があるときは <b>' + jbetter + '</b> を選ぶと勝率が高い傾向です。' });
+      }
+    }
+
+    // worst matchups
+    var opps = Object.keys(o.byOpp).map(function (n) { return { name: n, d: o.byOpp[n] }; });
+    var meaningful = opps.filter(function (x) { return x.d.total.n >= 3; });
+    var weak = meaningful.filter(function (x) { return pct(x.d.total.w, x.d.total.n) < 50; })
+      .sort(function (a, b) { return pct(a.d.total.w, a.d.total.n) - pct(b.d.total.w, b.d.total.n); });
+
+    if (weak.length) {
+      weak.slice(0, 3).forEach(function (x) {
+        var d = x.d, p = pct(d.total.w, d.total.n);
+        var turnHint = "";
+        if (d.first.n >= 2 && d.second.n >= 2) {
+          var wpf = pct(d.first.w, d.first.n), wps = pct(d.second.w, d.second.n);
+          if (Math.abs(wpf - wps) >= 20) {
+            var tb = wpf > wps ? "先攻" : "後攻";
+            turnHint = ' この相手には<b>' + tb + '（' + Math.max(wpf, wps) + '%）</b>の方が戦えているので、じゃんけんに勝ったら' + tb + 'を取りたい。';
+          }
+        }
+        var lossMemos = memosByDateDesc(rs.filter(function (r) { return r.oppLeader === x.name && r.result === "loss" && r.memo; }));
+        var memoBlock = lossMemos.length
+          ? '<div style="margin-top:9px;font-weight:700;font-size:12px;">この相手に負けた時のメモ：</div>' + memoHtml(lossMemos.slice(0, 4))
+          : '';
+        cards.push({ t: "warn", ic: "⚠️", h: "苦手: " + x.name + "（勝率 " + p + "%）",
+          body: '<b class="data">' + d.total.w + '勝' + (d.total.n - d.total.w) + '敗</b>。ここが負け越しの主因のひとつです。デッキの回し方・キープ基準・キーカードへの回答を重点的に見直しましょう。' + turnHint + memoBlock });
+      });
+    } else if (meaningful.length) {
+      cards.push({ t: "good", ic: "✅", h: "大きな苦手はなし",
+        body: '3戦以上こなした対面で勝率50%を下回るものはありません。まんべんなく戦えています。' });
+    }
+
+    // best matchup
+    var strong = meaningful.filter(function (x) { return pct(x.d.total.w, x.d.total.n) >= 60; })
+      .sort(function (a, b) { return pct(b.d.total.w, b.d.total.n) - pct(a.d.total.w, a.d.total.n); });
+    if (strong.length) {
+      var s = strong[0];
+      cards.push({ t: "good", ic: "🏆", h: "得意: " + s.name + "（勝率 " + pct(s.d.total.w, s.d.total.n) + "%）",
+        body: '<b class="data">' + s.d.total.w + '勝' + (s.d.total.n - s.d.total.w) + '敗</b>。当たったら安心して自分の動きを通せる相手。ここでの勝ちを取りこぼさないのが安定への近道です。' });
+    }
+
+    // reflection from loss memos
+    var lossMemosAll = memosByDateDesc(rs.filter(function (r) { return r.result === "loss" && r.memo; }));
+    if (lossMemosAll.length) {
+      cards.push({ t: "info", ic: "📝", h: "負け試合の振り返りメモ（" + lossMemosAll.length + "件）",
+        body: '負けた試合に自分で残したメモです。共通する負け筋・詰まったポイントが繰り返し出ていないか見返しましょう。より深い分析は下の「戦績サマリーをコピー」からチャットへ。' + memoHtml(lossMemosAll.slice(0, 8)) });
+    }
+    // wins with notes worth keeping
+    var winMemos = memosByDateDesc(rs.filter(function (r) { return r.result === "win" && r.memo; }));
+    if (winMemos.length >= 2) {
+      cards.push({ t: "good", ic: "💡", h: "勝ち試合のメモ（再現したい動き）",
+        body: '勝った試合のメモです。ここに書いた「うまくいった動き」を意識的に再現できると勝率が安定します。' + memoHtml(winMemos.slice(0, 5)) });
+    }
+
+    // small-sample note
+    var thin = opps.filter(function (x) { return x.d.total.n > 0 && x.d.total.n < 3; }).length;
+    if (thin) {
+      cards.push({ t: "info", ic: "🔎", h: "サンプルが少ない対面が " + thin + " 種類",
+        body: 'まだ1〜2戦の相手は勝率が振れやすいので参考程度に。数を重ねると判断の精度が上がります。' });
+    }
+
+    body.innerHTML = cards.map(function (c) {
+      return '<div class="adv ' + c.t + '"><div class="h"><span class="ic">' + c.ic + '</span>' + esc(c.h) + '</div><div>' + c.body + '</div></div>';
+    }).join("");
+  }
+  $("#adviceLeader").addEventListener("change", renderAdvice);
+
+  /* ---------- copy summary for chat ---------- */
+  function buildSummary() {
+    var lines = ["# ワンピカード 戦績サマリー", ""];
+    var ls = myLeaders();
+    lines.push("総記録数: " + records.length + " 戦");
+    lines.push("");
+    ls.forEach(function (L) {
+      var o = compute(L);
+      lines.push("## 使用リーダー: " + L);
+      lines.push("- 総合: " + o.total.w + "勝" + (o.total.n - o.total.w) + "敗 / " + o.total.n + "戦 (勝率" + pct(o.total.w, o.total.n) + "%)");
+      lines.push("- 先攻: " + o.first.w + "-" + (o.first.n - o.first.w) + " (" + pct(o.first.w, o.first.n) + "%) / 後攻: " + o.second.w + "-" + (o.second.n - o.second.w) + " (" + pct(o.second.w, o.second.n) + "%)");
+      lines.push("- じゃんけん勝ち時: 先攻選択 " + pct(o.jkWinFirst.w, o.jkWinFirst.n) + "% (" + o.jkWinFirst.n + "戦) / 後攻選択 " + pct(o.jkWinSecond.w, o.jkWinSecond.n) + "% (" + o.jkWinSecond.n + "戦)");
+      var opps = Object.keys(o.byOpp).map(function (n) { return { name: n, d: o.byOpp[n] }; })
+        .sort(function (a, b) { return b.d.total.n - a.d.total.n; });
+      opps.forEach(function (x) {
+        var d = x.d;
+        lines.push("  - vs " + x.name + ": " + d.total.w + "-" + (d.total.n - d.total.w) + " (" + pct(d.total.w, d.total.n) + "%) [先" + d.first.w + "-" + (d.first.n - d.first.w) + " / 後" + d.second.w + "-" + (d.second.n - d.second.w) + "]");
+      });
+      // メモ付きの試合を時系列で（負け筋の分析に使う）
+      var withMemo = records.filter(function (r) { return r.myLeader === L && r.memo; })
+        .sort(function (a, b) { return a.date < b.date ? 1 : (a.date > b.date ? -1 : 0); });
+      if (withMemo.length) {
+        lines.push("- 試合メモ（新しい順）:");
+        withMemo.forEach(function (r) {
+          lines.push("  - [" + r.date + "] vs " + r.oppLeader + " / " + (r.turn === "first" ? "先攻" : "後攻") +
+            " / " + (r.result === "win" ? "勝ち" : "負け") + " : " + r.memo);
+        });
+      }
+      lines.push("");
+    });
+    lines.push("この戦績と各試合のメモの内容も踏まえて、苦手な対面への具体的な対策・練習方針・先後の選び方についてアドバイスをください。メモから読み取れる繰り返しの負け筋があれば指摘してください。");
+    return lines.join("\n");
+  }
+  $("#copySummary").addEventListener("click", function () {
+    if (!records.length) { toast("記録がありません"); return; }
+    var text = buildSummary();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { toast("コピーしました"); }, function () { fallbackCopy(text); });
+    } else { fallbackCopy(text); }
+  });
+  function fallbackCopy(text) {
+    var ta = document.createElement("textarea");
+    ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    var ok = false;
+    try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+    document.body.removeChild(ta);
+    toast(ok ? "コピーしました" : "コピーできませんでした");
+  }
+
+  /* ---------- memo notebooks (リーダー別 対面攻略メモ) ---------- */
+  function notebookLeaders() {
+    return Object.keys(notebooks).sort(function (a, b) { return a.localeCompare(b, "ja"); });
+  }
+  function fillMemoLeaderSelect() {
+    var sel = $("#memoLeader");
+    var names = notebookLeaders();
+    if (!names.length) { sel.innerHTML = '<option value="">ページがありません</option>'; sel.value = ""; return; }
+    if (!currentMemoLeader || names.indexOf(currentMemoLeader) < 0) currentMemoLeader = names[0];
+    sel.innerHTML = names.map(function (n) { return '<option value="' + esc(n) + '">' + esc(n) + '</option>'; }).join("");
+    sel.value = currentMemoLeader;
+  }
+  function renderMemo() { fillMemoLeaderSelect(); renderMemoPage(); }
+
+  function oppOptions(selectedOpp) {
+    var names = allLeaders();
+    if (selectedOpp && names.indexOf(selectedOpp) < 0) names = names.concat([selectedOpp]);
+    names.sort(function (a, b) { return a.localeCompare(b, "ja"); });
+    var opts = '<option value="">— 対面を選択 —</option>';
+    opts += names.map(function (n) { return '<option value="' + esc(n) + '"' + (n === selectedOpp ? ' selected' : '') + '>' + esc(n) + '</option>'; }).join("");
+    opts += '<option value="__new__">＋ 新しい対面を入力…</option>';
+    return opts;
+  }
+
+  function ensureCommon() {
+    var nb = notebooks[currentMemoLeader]; if (!nb) return null;
+    nb.common = nb.common || { points: [], saved: false };
+    return nb.common;
+  }
+  function focusLastCommon() {
+    var ins = $("#memoBody").querySelectorAll(".msec.common .pt-in");
+    if (ins.length) ins[ins.length - 1].focus();
+  }
+  function renderCommon(c) {
+    var pts = c.points || [];
+    var head = '<div class="msec-head"><div class="msec-oppo"><span class="vslabel">このリーダー全体で意識すること</span><div class="oppo-name">共通</div></div></div>';
+    if (c.saved) {
+      var valid = pts.filter(function (p) { return p && p.trim(); });
+      return '<div class="msec common saved" data-common="1">' + head +
+        '<div class="view-field"><span class="lbl">ポイント</span>' +
+          (valid.length ? '<ul class="vpoints">' + valid.map(function (p) { return '<li>' + esc(p) + '</li>'; }).join("") + '</ul>' : '<div class="vval empty-val">（未記入）</div>') +
+        '</div>' +
+        '<button type="button" class="btn btn-ghost" data-act="cedit" style="width:100%;margin-top:6px;">編集する</button>' +
+      '</div>';
+    }
+    return '<div class="msec common" data-common="1">' + head +
+      '<div class="field"><span class="lbl">ポイント</span>' +
+        '<div class="points">' +
+          pts.map(function (p, pi) {
+            return '<div class="pt"><span class="dot">•</span>' +
+              '<input type="text" class="pt-in" data-field="cpoint" data-i="' + pi + '" value="' + esc(p) + '" placeholder="デッキ全体で意識すること・共通の勝ち筋など">' +
+              '<button type="button" class="pt-del" data-act="cdelpt" data-i="' + pi + '" aria-label="この項目を削除">✕</button></div>';
+          }).join("") +
+        '</div>' +
+        '<button type="button" class="btn-add" data-act="caddpt">＋ ポイントを追加</button>' +
+      '</div>' +
+      '<button type="button" class="btn btn-primary" data-act="csave" style="margin-top:14px;">保存する</button>' +
+    '</div>';
+  }
+
+  function renderMemoPage() {
+    var body = $("#memoBody");
+    if (!currentMemoLeader || !notebooks[currentMemoLeader]) {
+      body.innerHTML = '<div class="card"><div class="empty">まだメモページがありません。<br>右上の「＋ ページ」からリーダーのページを作成しましょう。</div></div>';
+      return;
+    }
+    var nb = notebooks[currentMemoLeader];
+    var secs = nb.sections || (nb.sections = []);
+    var common = nb.common || (nb.common = { points: [], saved: false });
+    var h = renderCommon(common) + secs.map(function (s, idx) {
+      var pts = s.points || [];
+      var head =
+        '<div class="msec-head">' +
+          '<div class="msec-oppo">' +
+            '<span class="vslabel">対面（相手リーダー）</span>' +
+            (s.saved
+              ? '<div class="oppo-name' + (s.opponent ? '' : ' empty-val') + '">' + (s.opponent ? esc(s.opponent) : "（未設定）") + '</div>'
+              : '<select data-field="opponent">' + oppOptions(s.opponent) + '</select>' +
+                '<input type="text" class="leader-new" data-field="opponent-new" placeholder="新しい対面リーダー名" autocomplete="off" style="display:none;">') +
+          '</div>' +
+          '<div class="msec-actions">' +
+            '<button type="button" class="msec-act" data-act="up"' + (idx === 0 ? ' disabled' : '') + ' aria-label="上へ">↑</button>' +
+            '<button type="button" class="msec-act" data-act="down"' + (idx === secs.length - 1 ? ' disabled' : '') + ' aria-label="下へ">↓</button>' +
+            '<button type="button" class="msec-act del" data-act="delsec" aria-label="このセクションを削除">✕</button>' +
+          '</div>' +
+        '</div>';
+
+      if (s.saved) {
+        var turnTxt = s.turnChoice === "first" ? "先攻" : (s.turnChoice === "second" ? "後攻" : "未選択");
+        var validPts = pts.filter(function (p) { return p && p.trim(); });
+        return '<div class="msec saved" data-sec="' + s.id + '">' +
+          head +
+          '<div class="view-field"><span class="lbl">先後選択</span><div class="vval' + (s.turnChoice ? '' : ' empty-val') + '">' + turnTxt + '</div></div>' +
+          '<div class="view-field"><span class="lbl">マリガン基準</span><div class="vval pre' + (s.mulligan && s.mulligan.trim() ? '' : ' empty-val') + '">' + (s.mulligan && s.mulligan.trim() ? esc(s.mulligan) : "（未記入）") + '</div></div>' +
+          '<div class="view-field"><span class="lbl">ポイント</span>' +
+            (validPts.length ? '<ul class="vpoints">' + validPts.map(function (p) { return '<li>' + esc(p) + '</li>'; }).join("") + '</ul>' : '<div class="vval empty-val">（未記入）</div>') +
+          '</div>' +
+          '<button type="button" class="btn btn-ghost" data-act="editsec" style="width:100%;margin-top:6px;">編集する</button>' +
+        '</div>';
+      }
+
+      return '<div class="msec" data-sec="' + s.id + '">' +
+        head +
+        '<div class="field">' +
+          '<span class="lbl">先後選択</span>' +
+          '<div class="seg-choice two neutral">' +
+            '<input type="radio" name="mt-' + s.id + '" id="mt-' + s.id + '-f" value="first" data-field="turn"' + (s.turnChoice === "first" ? ' checked' : '') + '>' +
+            '<label for="mt-' + s.id + '-f">先攻</label>' +
+            '<input type="radio" name="mt-' + s.id + '" id="mt-' + s.id + '-s" value="second" data-field="turn"' + (s.turnChoice === "second" ? ' checked' : '') + '>' +
+            '<label for="mt-' + s.id + '-s">後攻</label>' +
+          '</div>' +
+        '</div>' +
+        '<div class="field">' +
+          '<span class="lbl">マリガン基準</span>' +
+          '<textarea data-field="mulligan" placeholder="先攻・後攻それぞれのマリガン基準">' + esc(s.mulligan || "先攻：\n後攻：") + '</textarea>' +
+        '</div>' +
+        '<div class="field">' +
+          '<span class="lbl">ポイント</span>' +
+          '<div class="points">' +
+            pts.map(function (p, pi) {
+              return '<div class="pt"><span class="dot">•</span>' +
+                '<input type="text" class="pt-in" data-field="point" data-i="' + pi + '" value="' + esc(p) + '" placeholder="勝ち筋・注意点・キーカードへの回答など">' +
+                '<button type="button" class="pt-del" data-act="delpt" data-i="' + pi + '" aria-label="この項目を削除">✕</button></div>';
+            }).join("") +
+          '</div>' +
+          '<button type="button" class="btn-add" data-act="addpt">＋ ポイントを追加</button>' +
+        '</div>' +
+        '<button type="button" class="btn btn-primary" data-act="savesec" style="margin-top:14px;">保存する</button>' +
+      '</div>';
+    }).join("");
+    if (!secs.length) {
+      h += '<div class="card"><div class="empty">対面ごとのメモをここに追加します。<br>下の「＋ 対面セクションを追加」から始めましょう。</div></div>';
+    }
+    h += '<button type="button" class="btn-add btn-addsec" data-act="addsec">＋ 対面セクションを追加</button>';
+    h += '<button type="button" class="btn btn-danger" data-act="delpage" style="width:100%;margin-top:16px;">このリーダーのページを削除</button>';
+    body.innerHTML = h;
+  }
+
+  function findSection(sid) {
+    var nb = notebooks[currentMemoLeader]; if (!nb) return null;
+    return (nb.sections || []).find(function (x) { return x.id === sid; });
+  }
+  function addSection() {
+    var nb = notebooks[currentMemoLeader]; if (!nb) return;
+    nb.sections = nb.sections || [];
+    nb.sections.push({ id: uid(), opponent: "", turnChoice: "", mulligan: "先攻：\n後攻：", points: [], saved: false });
+    saveNotebooks(); renderMemoPage();
+    var secs = $("#memoBody").querySelectorAll(".msec");
+    if (secs.length) secs[secs.length - 1].scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+  function deleteSection(sid) {
+    var nb = notebooks[currentMemoLeader]; if (!nb) return;
+    nb.sections = (nb.sections || []).filter(function (x) { return x.id !== sid; });
+    saveNotebooks(); renderMemoPage();
+  }
+  function moveSection(sid, dir) {
+    var nb = notebooks[currentMemoLeader]; if (!nb) return;
+    var arr = nb.sections || [];
+    var i = arr.findIndex(function (x) { return x.id === sid; }), j = i + dir;
+    if (i < 0 || j < 0 || j >= arr.length) return;
+    var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+    saveNotebooks(); renderMemoPage();
+  }
+  function focusLastPoint(sid) {
+    var secEl = $("#memoBody").querySelector('[data-sec="' + sid + '"]');
+    if (!secEl) return;
+    var ins = secEl.querySelectorAll(".pt-in");
+    if (ins.length) ins[ins.length - 1].focus();
+  }
+
+  // delegated events on #memoBody (survive re-render)
+  $("#memoBody").addEventListener("click", function (e) {
+    var btn = e.target.closest("[data-act]");
+    if (!btn) return;
+    var act = btn.dataset.act;
+    if (act === "addsec") { addSection(); return; }
+    if (act === "delpage") {
+      if (currentMemoLeader && confirm("「" + currentMemoLeader + "」のページを削除しますか？\n（このリーダーの対面メモがすべて消えます）")) {
+        delete notebooks[currentMemoLeader]; currentMemoLeader = null; saveNotebooks(); renderMemo(); toast("ページを削除しました");
+      }
+      return;
+    }
+    if (act === "caddpt") { var ca = ensureCommon(); if (!ca) return; ca.points.push(""); saveNotebooks(); renderMemoPage(); focusLastCommon(); return; }
+    if (act === "cdelpt") { var cd = ensureCommon(); if (!cd) return; cd.points.splice(+btn.dataset.i, 1); saveNotebooks(); renderMemoPage(); return; }
+    if (act === "csave") { var cs = ensureCommon(); if (!cs) return; cs.points = (cs.points || []).filter(function (p) { return p && p.trim(); }); cs.saved = true; saveNotebooks(); renderMemoPage(); toast("保存しました"); return; }
+    if (act === "cedit") { var ce = ensureCommon(); if (!ce) return; ce.saved = false; saveNotebooks(); renderMemoPage(); return; }
+    var secEl = btn.closest("[data-sec]"); if (!secEl) return;
+    var sid = secEl.dataset.sec, s = findSection(sid); if (!s) return;
+    if (act === "up") moveSection(sid, -1);
+    else if (act === "down") moveSection(sid, 1);
+    else if (act === "delsec") { if (confirm("この対面セクションを削除しますか？")) deleteSection(sid); }
+    else if (act === "addpt") { s.points = s.points || []; s.points.push(""); saveNotebooks(); renderMemoPage(); focusLastPoint(sid); }
+    else if (act === "delpt") { var i = +btn.dataset.i; s.points.splice(i, 1); saveNotebooks(); renderMemoPage(); }
+    else if (act === "savesec") { s.points = (s.points || []).filter(function (p) { return p && p.trim(); }); s.saved = true; saveNotebooks(); renderMemoPage(); toast("保存しました"); }
+    else if (act === "editsec") { s.saved = false; saveNotebooks(); renderMemoPage(); }
+  });
+  $("#memoBody").addEventListener("input", function (e) {
+    var t = e.target, field = t.dataset.field; if (!field) return;
+    if (field === "cpoint") { var c = ensureCommon(); if (!c) return; c.points[+t.dataset.i] = t.value; saveNotebooks(); return; }
+    var secEl = t.closest("[data-sec]"); if (!secEl) return;
+    var s = findSection(secEl.dataset.sec); if (!s) return;
+    if (field === "mulligan") s.mulligan = t.value;
+    else if (field === "point") { s.points[+t.dataset.i] = t.value; }
+    else if (field === "opponent-new") s.opponent = t.value.trim();
+    else return;
+    saveNotebooks();
+  });
+  $("#memoBody").addEventListener("change", function (e) {
+    var t = e.target, field = t.dataset.field; if (!field) return;
+    var secEl = t.closest("[data-sec]"); if (!secEl) return;
+    var s = findSection(secEl.dataset.sec); if (!s) return;
+    if (field === "turn") { s.turnChoice = t.value; saveNotebooks(); }
+    else if (field === "opponent") {
+      var inp = secEl.querySelector('[data-field="opponent-new"]');
+      if (t.value === "__new__") { if (inp) { inp.style.display = "block"; inp.value = ""; inp.focus(); } s.opponent = ""; }
+      else { if (inp) inp.style.display = "none"; s.opponent = t.value; }
+      saveNotebooks();
+    }
+  });
+
+  // page controls
+  $("#memoLeader").addEventListener("change", function () { currentMemoLeader = this.value; renderMemoPage(); });
+  bindCombo("#memoNewSel", "#memoNewText");
+  $("#memoAddPage").addEventListener("click", function () {
+    var row = $("#memoAddRow");
+    var show = row.style.display === "none" || !row.style.display;
+    row.style.display = show ? "block" : "none";
+    if (show) fillLeaderCombo("#memoNewSel", "#memoNewText", null);
+  });
+  $("#memoNewCancel").addEventListener("click", function () { $("#memoAddRow").style.display = "none"; });
+  $("#memoNewCreate").addEventListener("click", function () {
+    var name = comboValue("#memoNewSel", "#memoNewText");
+    if (!name) { toast("リーダーを選んでください"); return; }
+    if (!notebooks[name]) notebooks[name] = { sections: [] };
+    saveNotebooks();
+    currentMemoLeader = name;
+    $("#memoAddRow").style.display = "none";
+    renderMemo();
+    toast("「" + name + "」のページを作成しました");
+  });
+
+  /* ---------- export / import ---------- */
+  function buildBackup() {
+    // 余白なしの圧縮JSON（クリップボードで途中切れしにくいよう最小サイズに）
+    return JSON.stringify({ app: "optcg-record", version: 2, exportedAt: new Date().toISOString(), records: records, notebooks: notebooks });
+  }
+  // text(JSON文字列) を取り込む。成功で件数を返し、失敗で例外。
+  function applyImportText(text) {
+    var parsed = JSON.parse(text);
+    var incoming = Array.isArray(parsed) ? parsed : (Array.isArray(parsed.records) ? parsed.records : null);
+    var inNotebooks = (parsed && parsed.notebooks && typeof parsed.notebooks === "object") ? parsed.notebooks : {};
+    if (!incoming && !Object.keys(inNotebooks).length) throw new Error("bad");
+    incoming = incoming || [];
+    var hasData = records.length || Object.keys(notebooks).length;
+    var mode = hasData ? (confirm("現在のデータに読み込んだ内容を追加しますか？\n\n「キャンセル」を選ぶと、現在のデータを置き換えます。") ? "merge" : "replace") : "replace";
+    var clean = incoming.filter(function (r) { return r && r.myLeader && r.oppLeader; }).map(function (r) {
+      return { id: r.id || uid(), date: r.date || todayStr(), myLeader: r.myLeader, oppLeader: r.oppLeader,
+        jankenWon: !!r.jankenWon, turn: r.turn === "second" ? "second" : "first",
+        result: r.result === "loss" ? "loss" : "win", memo: r.memo || "", point: r.point || "" };
+    });
+    if (mode === "merge") {
+      var seen = {}; records.forEach(function (r) { seen[r.id] = 1; });
+      clean.forEach(function (r) { if (seen[r.id]) r.id = uid(); records.push(r); });
+      Object.keys(inNotebooks).forEach(function (k) { notebooks[k] = inNotebooks[k]; });
+    } else {
+      records = clean;
+      notebooks = inNotebooks;
+    }
+    currentMemoLeader = null;
+    save(); saveNotebooks(); refreshLeaderCombos(); renderRecent(); updateCounts();
+    return clean.length;
+  }
+
+  $("#exportBtn").addEventListener("click", function () {
+    if (!records.length && !Object.keys(notebooks).length) { toast("書き出すデータがありません"); return; }
+    var data = buildBackup();
+    var fname = "optcg-senseki-" + todayStr() + ".json";
+    if (window.claude && window.claude.downloads && window.claude.downloads.save) {
+      window.claude.downloads.save({ filename: fname, data: data }).then(function () { toast("書き出しました"); }, function () {});
+    } else {
+      try {
+        var blob = new Blob([data], { type: "application/json" });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a"); a.href = url; a.download = fname;
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+        toast("書き出しました");
+      } catch (err) { toast("ダウンロード不可。「コピー」をお使いください"); }
+    }
+  });
+  $("#importBtn").addEventListener("click", function () { $("#importFile").click(); });
+  $("#importFile").addEventListener("change", function (e) {
+    var file = e.target.files && e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function () {
+      try { var n = applyImportText(reader.result); toast("読み込みました（" + n + "件）"); }
+      catch (err) { toast("読み込めませんでした"); }
+      e.target.value = "";
+    };
+    reader.readAsText(file);
+  });
+
+  // クリップボード経由のバックアップ（ダウンロードが使えない環境用）
+  function execCopy() { try { return document.execCommand("copy"); } catch (e) { return false; } }
+  function selectBackupArea() {
+    var ta = $("#backupArea"); ta.focus(); ta.select();
+    try { ta.setSelectionRange(0, ta.value.length); } catch (e) {}
+  }
+  function copyBackupText(text) {
+    selectBackupArea();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { toast("コピーしました（" + text.length + "文字）"); },
+        function () { toast(execCopy() ? ("コピーしました（" + text.length + "文字）") : "枠を長押し→全選択→コピーしてください"); }
+      );
+    } else {
+      toast(execCopy() ? ("コピーしました（" + text.length + "文字）") : "枠を長押し→全選択→コピーしてください");
+    }
+  }
+  $("#copyBackupBtn").addEventListener("click", function () {
+    if (!records.length && !Object.keys(notebooks).length) { toast("コピーするデータがありません"); return; }
+    var text = buildBackup();
+    $("#backupArea").value = text;
+    $("#backupPanel").style.display = "block";
+    copyBackupText(text);
+  });
+  $("#backupClose").addEventListener("click", function () { $("#backupPanel").style.display = "none"; });
+  $("#backupCopyAgain").addEventListener("click", function () { copyBackupText($("#backupArea").value); });
+
+  $("#pasteImportBtn").addEventListener("click", function () {
+    var panel = $("#pastePanel");
+    var show = panel.style.display === "none" || !panel.style.display;
+    panel.style.display = show ? "block" : "none";
+    if (show) { $("#pasteArea").value = ""; $("#pasteArea").focus(); }
+  });
+  $("#pasteCancel").addEventListener("click", function () { $("#pastePanel").style.display = "none"; });
+  $("#pasteApply").addEventListener("click", function () {
+    var text = $("#pasteArea").value.trim();
+    if (!text) { toast("貼り付けが空です"); return; }
+    if (text.charAt(0) !== "{" && text.charAt(0) !== "[") { toast("バックアップJSONではありません（先頭が { で始まる全文を貼り付け）"); return; }
+    var parsed;
+    try { parsed = JSON.parse(text); }
+    catch (e) { toast("途中で切れています（受け取り " + text.length + " 文字）。全文を貼り直してください"); return; }
+    try {
+      var n = applyImportText(text);
+      $("#pastePanel").style.display = "none"; $("#pasteArea").value = "";
+      toast("読み込みました（" + n + "件）");
+    } catch (err) { toast("データが入っていない／形式が不正です"); }
+  });
+
+  /* ---------- cloud sync (Firebase Realtime Database, REST) ---------- */
+  var SYNCKEY = "optcg_sync_v1";
+  var syncCfg = loadSyncCfg();
+  var lastKnownAt = +syncCfg.lastKnownAt || 0;   // 最後に反映したクラウド更新時刻（永続化）
+  var pushTimer = null, pollTimer = null, pushing = false;
+
+  function loadSyncCfg() {
+    try { var c = JSON.parse(localStorage.getItem(SYNCKEY)); return (c && typeof c === "object") ? c : {}; }
+    catch (e) { return {}; }
+  }
+  function saveSyncCfg() { try { localStorage.setItem(SYNCKEY, JSON.stringify(syncCfg)); } catch (e) {} }
+  function syncConfigured() { return !!(syncCfg.url && syncCfg.code); }
+  function syncOn() { return !!(syncCfg.enabled && syncConfigured()); }
+  function syncEndpoint() { return syncCfg.url.replace(/\/+$/, "") + "/spaces/" + encodeURIComponent(syncCfg.code) + ".json"; }
+  function hhmm() { var d = new Date(), p = function (n) { return String(n).padStart(2, "0"); }; return p(d.getHours()) + ":" + p(d.getMinutes()); }
+  function setSyncStatus(t) { var el = $("#syncStatus"); if (el) el.textContent = t; }
+
+  function rerenderActive() {
+    refreshLeaderCombos(); updateCounts();
+    var b = document.querySelector('nav.tabs button[aria-selected="true"]');
+    var v = b ? b.dataset.view : "record";
+    if (v === "history") renderRecent();
+    else if (v === "stats") renderStats();
+    else if (v === "memo") renderMemo();
+    else if (v === "advice") renderAdvice();
+  }
+
+  function schedulePush() {
+    if (!syncOn()) return;
+    clearTimeout(pushTimer);
+    pushTimer = setTimeout(cloudPush, 1200);
+  }
+  function cloudPush() {
+    if (!syncConfigured()) return;
+    pushing = true;
+    var now = Date.now();
+    var body = JSON.stringify({ records: records, notebooks: notebooks, updatedAt: now });
+    setSyncStatus("同期中…");
+    fetch(syncEndpoint(), { method: "PUT", headers: { "Content-Type": "application/json" }, body: body })
+      .then(function (r) { if (!r.ok) throw new Error("http " + r.status); return r.text(); })
+      .then(function () { lastKnownAt = now; syncCfg.lastKnownAt = now; syncCfg.linked = true; saveSyncCfg(); setSyncStatus("同期済み " + hhmm()); })
+      .catch(function () { setSyncStatus("同期エラー（自動再試行）"); })
+      .then(function () { pushing = false; });
+  }
+  function cloudPull(opts) {
+    opts = opts || {};
+    if (!syncConfigured()) return Promise.resolve(false);
+    return fetch(syncEndpoint(), { method: "GET" })
+      .then(function (r) { if (!r.ok) throw new Error("http " + r.status); return r.json(); })
+      .then(function (data) {
+        if (!data || typeof data !== "object") { if (opts.force) setSyncStatus("クラウドは空です"); return false; }
+        var at = +data.updatedAt || 0;
+        if (!opts.force && at <= lastKnownAt) { return false; }
+        if (Array.isArray(data.records)) { records = data.records; save0(); }
+        if (data.notebooks && typeof data.notebooks === "object") { notebooks = data.notebooks; saveNotebooks0(); }
+        lastKnownAt = at || Date.now();
+        syncCfg.lastKnownAt = lastKnownAt; syncCfg.linked = true; saveSyncCfg();
+        currentMemoLeader = null;
+        rerenderActive();
+        setSyncStatus("同期済み " + hhmm());
+        return true;
+      })
+      .catch(function () { setSyncStatus("同期エラー（自動再試行）"); return false; });
+  }
+  function startSync() {
+    clearInterval(pollTimer);
+    if (!syncOn()) { setSyncStatus("オフ"); return; }
+    setSyncStatus("接続中…");
+    if (syncCfg.linked) {
+      // 紐付け済み → 読み込み時に最新をクラウドから取得（新しければ反映）
+      cloudPull({});
+    } else {
+      // 初回はまだ向きが未確定 → 上書きせず、クラウドの更新時刻だけ取得
+      fetch(syncEndpoint(), { method: "GET" })
+        .then(function (r) { return r.json(); })
+        .then(function (data) { lastKnownAt = (data && +data.updatedAt) || 0; setSyncStatus("同期オン " + hhmm()); })
+        .catch(function () { setSyncStatus("接続エラー"); });
+    }
+    pollTimer = setInterval(function () { if (!pushing) cloudPull({}); }, 8000);
+  }
+  function stopSync() { clearInterval(pollTimer); setSyncStatus("オフ"); }
+
+  function readSyncInputs() {
+    syncCfg.url = $("#syncUrl").value.trim();
+    syncCfg.code = $("#syncCode").value.trim();
+    saveSyncCfg();
+  }
+  $("#syncUrl").value = syncCfg.url || "";
+  $("#syncCode").value = syncCfg.code || "";
+  $("#syncEnabled").checked = !!syncCfg.enabled;
+  $("#syncUrl").addEventListener("input", readSyncInputs);
+  $("#syncCode").addEventListener("input", readSyncInputs);
+  $("#syncEnabled").addEventListener("change", function () {
+    readSyncInputs();
+    syncCfg.enabled = this.checked; saveSyncCfg();
+    if (syncCfg.enabled && !syncConfigured()) { toast("URLと同期コードを入力してください"); }
+    if (syncOn()) startSync(); else stopSync();
+  });
+  $("#syncPushBtn").addEventListener("click", function () {
+    readSyncInputs();
+    if (!syncConfigured()) { toast("URLと同期コードを入力してください"); return; }
+    if (!confirm("この端末のデータでクラウドを上書きします。よろしいですか？")) return;
+    cloudPush(); toast("クラウドへアップしました");
+  });
+  $("#syncPullBtn").addEventListener("click", function () {
+    readSyncInputs();
+    if (!syncConfigured()) { toast("URLと同期コードを入力してください"); return; }
+    if (!confirm("クラウドのデータでこの端末を上書きします。よろしいですか？")) return;
+    cloudPull({ force: true }).then(function (ok) { toast(ok ? "クラウドから取得しました" : "クラウドにデータがありません"); });
+  });
+  // スマホはバックグラウンドでタイマーが止まるため、前面復帰時に最新を取得
+  document.addEventListener("visibilitychange", function () {
+    if (!document.hidden && syncOn() && !pushing) cloudPull({});
+  });
+
+  /* ---------- init ---------- */
+  refreshLeaderCombos();
+  renderRecent();
+  updateCounts();
+  if (syncOn()) startSync();
+})();
+</script>
+</body>
+</html>
