@@ -319,6 +319,11 @@
 
   .btn-danger { background: transparent; color: var(--loss); border-color: var(--loss); }
   .btn-danger:hover { background: var(--loss-soft); }
+  .snap-item { display: flex; align-items: center; gap: 8px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 9px; padding: 8px 10px; margin-bottom: 6px; }
+  .snap-item .si-body { flex: 1; min-width: 0; font-size: 13px; color: var(--ink); }
+  .snap-item .si-meta { display: block; font-size: 11px; font-weight: 700; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .snap-item .si-btn { flex: none; appearance: none; border: 1px solid var(--accent); background: transparent; color: var(--accent); font-family: inherit; font-size: 12px; font-weight: 800; border-radius: 8px; padding: 7px 12px; cursor: pointer; }
+  .snap-item .si-btn:hover { background: var(--accent-soft); }
 
   /* memo (leader strategy notebook) */
   .memo-top { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
@@ -571,6 +576,18 @@
           <p style="font-size:11px;color:var(--muted);line-height:1.5;margin:10px 0 0;">
             初回は、データがある端末で「この端末→クラウド」を1回押してアップ。別端末では同じURL・コードを入れて「クラウド→この端末」で取得。以後は自動同期です。
           </p>
+          <div class="btn-row" style="margin-top:12px;">
+            <button type="button" class="btn btn-ghost" id="restoreBtn">自動バックアップから復元</button>
+          </div>
+          <p style="font-size:11px;color:var(--muted);line-height:1.5;margin:8px 0 0;">
+            同期が有効なら、毎日1回この端末のデータを自動でバックアップ（直近14日分を保持）。誤操作で消しても、日付を選んで戻せます。
+          </p>
+          <div id="restorePanel" style="display:none; margin-top:10px;">
+            <div id="restoreList"></div>
+            <div class="btn-row" style="margin-top:8px;">
+              <button type="button" class="btn btn-ghost" id="restoreClose">閉じる</button>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -1636,7 +1653,7 @@
     setSyncStatus("同期中…");
     fetch(syncEndpoint(), { method: "PUT", headers: { "Content-Type": "application/json" }, body: body })
       .then(function (r) { if (!r.ok) throw new Error("http " + r.status); return r.text(); })
-      .then(function () { lastKnownAt = now; syncCfg.lastKnownAt = now; syncCfg.linked = true; saveSyncCfg(); setSyncStatus("同期済み " + hhmm()); })
+      .then(function () { lastKnownAt = now; syncCfg.lastKnownAt = now; syncCfg.linked = true; saveSyncCfg(); setSyncStatus("同期済み " + hhmm()); maybeSnapshot(); })
       .catch(function () { setSyncStatus("同期エラー（自動再試行）"); })
       .then(function () { pushing = false; });
   }
@@ -1665,8 +1682,8 @@
     if (!syncOn()) { setSyncStatus("オフ"); return; }
     setSyncStatus("接続中…");
     if (syncCfg.linked) {
-      // 紐付け済み → 読み込み時に最新をクラウドから取得（新しければ反映）
-      cloudPull({});
+      // 紐付け済み → 読み込み時に最新をクラウドから取得（新しければ反映）→ 日次バックアップ
+      cloudPull({}).then(function () { maybeSnapshot(); });
     } else {
       // 初回はまだ向きが未確定 → 上書きせず、クラウドの更新時刻だけ取得
       fetch(syncEndpoint(), { method: "GET" })
@@ -1677,6 +1694,72 @@
     pollTimer = setInterval(function () { if (!pushing) cloudPull({}); }, 8000);
   }
   function stopSync() { clearInterval(pollTimer); setSyncStatus("オフ"); }
+
+  /* ---- 自動スナップショット（日次バックアップ・直近14日）---- */
+  function backupBase() { return syncCfg.url.replace(/\/+$/, "") + "/backups/" + encodeURIComponent(syncCfg.code); }
+  function maybeSnapshot() {
+    if (!syncOn()) return;
+    if (syncCfg.lastSnapshot === todayStr()) return;
+    if (!records.length && !Object.keys(notebooks).length) return;
+    doSnapshot();
+  }
+  function doSnapshot() {
+    if (!syncConfigured()) return;
+    var date = todayStr();
+    var body = JSON.stringify({ records: records, notebooks: notebooks, savedAt: Date.now() });
+    fetch(backupBase() + "/" + date + ".json", { method: "PUT", headers: { "Content-Type": "application/json" }, body: body })
+      .then(function (r) { if (!r.ok) throw new Error("http " + r.status); return r.text(); })
+      .then(function () { syncCfg.lastSnapshot = date; saveSyncCfg(); pruneSnapshots(); })
+      .catch(function () {});
+  }
+  function pruneSnapshots() {
+    fetch(backupBase() + ".json").then(function (r) { return r.json(); }).then(function (obj) {
+      if (!obj || typeof obj !== "object") return;
+      var dates = Object.keys(obj).sort();  // 昇順（古い順）
+      var keep = 14;
+      if (dates.length <= keep) return;
+      dates.slice(0, dates.length - keep).forEach(function (d) {
+        fetch(backupBase() + "/" + encodeURIComponent(d) + ".json", { method: "DELETE" }).catch(function () {});
+      });
+    }).catch(function () {});
+  }
+  function openRestorePanel() {
+    if (!syncConfigured()) { toast("先にクラウド同期を設定してください"); return; }
+    var panel = $("#restorePanel"), list = $("#restoreList");
+    panel.style.display = "block";
+    list.innerHTML = '<div class="empty">読み込み中…</div>';
+    fetch(backupBase() + ".json").then(function (r) { return r.json(); }).then(function (obj) {
+      if (!obj || typeof obj !== "object" || !Object.keys(obj).length) {
+        list.innerHTML = '<div class="empty">自動バックアップはまだありません。<br>データを更新すると、毎日1回ずつ保存されます。</div>';
+        return;
+      }
+      var dates = Object.keys(obj).sort().reverse();  // 新しい順
+      list.innerHTML = dates.map(function (d) {
+        var snap = obj[d] || {};
+        var nrec = Array.isArray(snap.records) ? snap.records.length : 0;
+        var np = (snap.notebooks && typeof snap.notebooks === "object") ? Object.keys(snap.notebooks).length : 0;
+        return '<div class="snap-item"><div class="si-body"><span class="si-meta">' + esc(d) + '</span>' + nrec + ' 戦・メモ ' + np + ' リーダー</div>' +
+          '<button type="button" class="si-btn" data-restore="' + esc(d) + '">復元</button></div>';
+      }).join("");
+      list.querySelectorAll("[data-restore]").forEach(function (b) { b.addEventListener("click", function () { restoreSnapshot(b.dataset.restore); }); });
+    }).catch(function () { list.innerHTML = '<div class="empty">読み込みに失敗しました（接続を確認）</div>'; });
+  }
+  function restoreSnapshot(date) {
+    fetch(backupBase() + "/" + encodeURIComponent(date) + ".json").then(function (r) { return r.json(); }).then(function (snap) {
+      if (!snap || typeof snap !== "object") { toast("そのバックアップは読めませんでした"); return; }
+      if (!confirm(date + " のバックアップで現在のデータを置き換えます。\n全端末に反映されます。よろしいですか？")) return;
+      records = Array.isArray(snap.records) ? snap.records : [];
+      notebooks = (snap.notebooks && typeof snap.notebooks === "object") ? snap.notebooks : {};
+      save0(); saveNotebooks0();
+      currentMemoLeader = null;
+      if (syncOn()) cloudPush();  // 復元結果を全端末へ即反映
+      rerenderActive();
+      $("#restorePanel").style.display = "none";
+      toast(date + " のバックアップを復元しました");
+    }).catch(function () { toast("復元に失敗しました"); });
+  }
+  $("#restoreBtn").addEventListener("click", openRestorePanel);
+  $("#restoreClose").addEventListener("click", function () { $("#restorePanel").style.display = "none"; });
 
   function readSyncInputs() {
     syncCfg.url = $("#syncUrl").value.trim();
