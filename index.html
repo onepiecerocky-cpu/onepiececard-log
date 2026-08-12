@@ -334,6 +334,40 @@
   }
   .btn-add:hover { color: var(--accent); border-color: var(--accent); }
   .btn-addsec { margin-top: 2px; padding: 13px; font-size: 14px; }
+
+  /* 進行表（ターンプラン） */
+  .plan-head { display: flex; align-items: baseline; justify-content: space-between; margin: 2px 0 6px; }
+  .plan-cols { display: flex; gap: 8px; font-size: 8.5px; font-weight: 900; letter-spacing: .1em; color: #3d4a5f; }
+  .plrow { display: flex; gap: 6px; align-items: center; margin-bottom: 6px; }
+  .plrow .plt { flex: none; width: 26px; font-size: 11px; font-weight: 900; color: var(--accent); font-variant-numeric: tabular-nums; }
+  .plrow .pl-do { flex: 1; min-width: 0; font-size: 12.5px; padding: 9px 10px; }
+  .plrow .pl-n { flex: none; width: 44px; text-align: center; font-size: 12.5px; padding: 9px 4px; font-variant-numeric: tabular-nums; }
+  .plrow .pl-x { flex: none; appearance: none; border: 0; background: transparent; color: var(--muted); font-size: 14px; cursor: pointer; padding: 5px 6px; line-height: 1; }
+  .plrow .pl-x:hover { color: var(--loss); }
+  .vplan { width: 100%; border-collapse: collapse; margin-top: 2px; }
+  .vplan th { font-size: 8.5px; font-weight: 900; letter-spacing: .1em; color: #3d4a5f; text-align: left; padding: 2px 6px 4px 0; }
+  .vplan th.num, .vplan td.num { text-align: center; width: 40px; }
+  .vplan td { font-size: 12px; color: #c6d2e2; line-height: 1.5; padding: 5px 6px 5px 0; border-top: 1px solid var(--line-soft); vertical-align: top; font-variant-numeric: tabular-nums; }
+  .vplan td.plt { color: var(--accent); font-weight: 900; width: 28px; white-space: nowrap; }
+  .plan-side { font-size: 10px; font-weight: 900; letter-spacing: .1em; color: #07090f; background: var(--accent); display: inline-block; padding: 2px 8px; margin-bottom: 6px; clip-path: polygon(4px 0,100% 0,calc(100% - 4px) 100%,0 100%); }
+  .plan-side.second { background: var(--gold); }
+
+  /* combatlog viewer */
+  .lv-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+  .lv-chip { font-size: 10.5px; font-weight: 800; color: var(--muted-2); background: #0a101c; border: 1px solid var(--line); padding: 4px 8px; font-variant-numeric: tabular-nums; }
+  .lv-chip b { color: var(--ink-strong); }
+  .lv-chip.win b { color: var(--win); }
+  .lv-row { display: flex; gap: 8px; padding: 8px 0; border-top: 1px solid var(--line-soft); }
+  .lv-row .t { flex: none; width: 34px; font-size: 11px; font-weight: 900; font-variant-numeric: tabular-nums; }
+  .lv-row.me .t { color: var(--accent); }
+  .lv-row.opp .t { color: var(--muted); }
+  .lv-row .who { flex: none; width: 34px; font-size: 9px; font-weight: 900; letter-spacing: .06em; margin-top: 2px; }
+  .lv-row.me .who { color: var(--accent); }
+  .lv-row.opp .who { color: var(--muted); }
+  .lv-row .acts { flex: 1; min-width: 0; font-size: 11.5px; color: #c6d2e2; line-height: 1.55; overflow-wrap: anywhere; }
+  .lv-row .acts .fail { color: var(--muted); }
+  .lv-row .lh { flex: none; text-align: right; font-size: 10px; color: var(--muted); font-variant-numeric: tabular-nums; line-height: 1.5; }
+  .lv-row .lh b { color: var(--ink); font-weight: 800; }
   .msec.common { border-color: var(--gold-dim); background: linear-gradient(180deg, #131007 0%, var(--surface) 45%); }
   .msec.common .oppo-name { color: var(--gold); letter-spacing: .1em; }
   /* saved (read-only) section */
@@ -596,6 +630,16 @@
       </div>
 
       <div id="memoBody"></div>
+
+      <div class="card" style="margin-top:14px;">
+        <h2>COMBAT LOG // ログから進行表を作成</h2>
+        <p style="font-size:12px;color:var(--muted);line-height:1.6;margin:0 0 12px;">
+          シミュレータの対戦ログ（.log / .txt）を読み込むと、その対戦の進行表（ターンごとの行動・終了時ライフ/手札）を自動で描画します。描画後、対面セクションのプランに取り込むこともできます。
+        </p>
+        <button type="button" class="btn btn-ghost" id="logLoadBtn" style="width:100%;">ログファイルを読み込む</button>
+        <input type="file" id="logFile" accept=".log,.txt,text/plain" style="display:none;">
+        <div id="logView" style="margin-top:12px;"></div>
+      </div>
     </section>
 
     <!-- ADVICE -->
@@ -1311,6 +1355,44 @@
     '</div>';
   }
 
+  // 進行表（ターンプラン）: s.plans = { first:[{plan,life,hand}], second:[...] }
+  function ensurePlans(s) {
+    s.plans = s.plans || {};
+    s.plans.first = s.plans.first || [];
+    s.plans.second = s.plans.second || [];
+    return s.plans;
+  }
+  function sideLabel(side) { return side === "first" ? "先攻プラン" : "後攻プラン"; }
+  function buildPlanEditor(s, side) {
+    var rows = ensurePlans(s)[side];
+    var h = '<div class="field"><span class="plan-side' + (side === "second" ? " second" : "") + '">' + sideLabel(side) + '</span>';
+    if (rows.length) {
+      h += '<div class="plan-head"><span class="lbl" style="margin:0;">進行表</span><span class="plan-cols">やること ／ L=終了時ライフ ／ H=手札</span></div>';
+    }
+    h += rows.map(function (r, i) {
+      return '<div class="plrow">' +
+        '<span class="plt">T' + (i + 1) + '</span>' +
+        '<input type="text" class="pl-do" data-field="plan-do" data-side="' + side + '" data-i="' + i + '" value="' + esc(r.plan || "") + '" placeholder="このターンでやること">' +
+        '<input type="text" class="pl-n" data-field="plan-life" data-side="' + side + '" data-i="' + i + '" value="' + esc(r.life || "") + '" placeholder="L" inputmode="numeric">' +
+        '<input type="text" class="pl-n" data-field="plan-hand" data-side="' + side + '" data-i="' + i + '" value="' + esc(r.hand || "") + '" placeholder="H" inputmode="numeric">' +
+        '<button type="button" class="pl-x" data-act="delplan" data-side="' + side + '" data-i="' + i + '" aria-label="この行を削除">✕</button>' +
+      '</div>';
+    }).join("");
+    h += '<button type="button" class="btn-add" data-act="addplan" data-side="' + side + '">＋ ターンを追加</button></div>';
+    return h;
+  }
+  function buildPlanView(s, side) {
+    var rows = (s.plans && s.plans[side]) || [];
+    var valid = rows.filter(function (r) { return (r.plan && r.plan.trim()) || r.life || r.hand; });
+    if (!valid.length) return '';
+    return '<div class="view-field"><span class="plan-side' + (side === "second" ? " second" : "") + '">' + sideLabel(side) + '</span>' +
+      '<table class="vplan"><tr><th></th><th>やること</th><th class="num">L</th><th class="num">H</th></tr>' +
+      rows.map(function (r, i) {
+        return '<tr><td class="plt">T' + (i + 1) + '</td><td>' + esc(r.plan || "") + '</td><td class="num">' + esc(r.life || "–") + '</td><td class="num">' + esc(r.hand || "–") + '</td></tr>';
+      }).join("") +
+      '</table></div>';
+  }
+
   function renderMemoPage() {
     var body = $("#memoBody");
     if (!currentMemoLeader || !notebooks[currentMemoLeader]) {
@@ -1348,6 +1430,8 @@
           '<div class="view-field"><span class="lbl">ポイント</span>' +
             (validPts.length ? '<ul class="vpoints">' + validPts.map(function (p) { return '<li>' + esc(p) + '</li>'; }).join("") + '</ul>' : '<div class="vval empty-val">（未記入）</div>') +
           '</div>' +
+          buildPlanView(s, "first") +
+          buildPlanView(s, "second") +
           '<button type="button" class="btn btn-ghost" data-act="editsec" style="width:100%;margin-top:6px;">編集する</button>' +
         '</div>';
       }
@@ -1378,6 +1462,8 @@
           '</div>' +
           '<button type="button" class="btn-add" data-act="addpt">＋ ポイントを追加</button>' +
         '</div>' +
+        buildPlanEditor(s, "first") +
+        buildPlanEditor(s, "second") +
         '<button type="button" class="btn btn-primary" data-act="savesec" style="margin-top:14px;">保存する</button>' +
       '</div>';
     }).join("");
@@ -1446,6 +1532,22 @@
     else if (act === "delpt") { var i = +btn.dataset.i; s.points.splice(i, 1); saveNotebooks(); renderMemoPage(); }
     else if (act === "savesec") { s.points = (s.points || []).filter(function (p) { return p && p.trim(); }); s.saved = true; saveNotebooks(); renderMemoPage(); toast("保存しました"); }
     else if (act === "editsec") { s.saved = false; saveNotebooks(); renderMemoPage(); }
+    else if (act === "addplan") {
+      var pside = btn.dataset.side;
+      ensurePlans(s)[pside].push({ plan: "", life: "", hand: "" });
+      saveNotebooks(); renderMemoPage();
+      var rowsEl = $("#memoBody").querySelectorAll('[data-sec="' + sid + '"] [data-field="plan-do"][data-side="' + pside + '"]');
+      if (rowsEl.length) rowsEl[rowsEl.length - 1].focus();
+    }
+    else if (act === "delplan") {
+      var dside = btn.dataset.side, di = +btn.dataset.i;
+      var rowsArr = ensurePlans(s)[dside];
+      var target = rowsArr[di];
+      var hasContent = target && ((target.plan && target.plan.trim()) || target.life || target.hand);
+      if (hasContent && !confirm("T" + (di + 1) + " の行を削除しますか？")) return;
+      rowsArr.splice(di, 1);
+      saveNotebooks(); renderMemoPage();
+    }
   });
   $("#memoBody").addEventListener("input", function (e) {
     var t = e.target, field = t.dataset.field; if (!field) return;
@@ -1455,6 +1557,13 @@
     if (field === "mulligan") s.mulligan = t.value;
     else if (field === "point") { s.points[+t.dataset.i] = t.value; }
     else if (field === "opponent-new") s.opponent = t.value.trim();
+    else if (field === "plan-do" || field === "plan-life" || field === "plan-hand") {
+      var prow = ensurePlans(s)[t.dataset.side][+t.dataset.i];
+      if (!prow) return;
+      if (field === "plan-do") prow.plan = t.value;
+      else if (field === "plan-life") prow.life = t.value.trim();
+      else prow.hand = t.value.trim();
+    }
     else return;
     saveNotebooks();
   });
@@ -1490,6 +1599,188 @@
     $("#memoAddRow").style.display = "none";
     renderMemo();
     toast("「" + name + "」のページを作成しました");
+  });
+
+  /* ---------- combatlog → 進行表 ---------- */
+  var lvData = null, lvMe = 1, lvPage = "", lvOpp = "";
+
+  function parseCombatLog(text) {
+    var lines = text.replace(/[\u200b\u200c\ufeff]/g, "").split(/\r?\n/);
+    var p1 = null, p2 = null, leaders = {}, firstPlayer = null, winner = null;
+    var life = {}, hand = {};
+    var rows = [], actions = [], turnNo = 1, turnOwner = null, pending = null;
+
+    function clean(s) { return s.replace(/<[^>]+>/g, "").trim(); }
+    function isDump(body) { return /^(Hand|Board|Trash|Life):/.test(body) || /^Drew card|^Placing Cards|^Mulligan$|^Draw \d/.test(body); }
+    function other(p) { return p === p1 ? p2 : p1; }
+    function snapshot() {
+      return { life1: life[p1], hand1: hand[p1], life2: life[p2], hand2: hand[p2] };
+    }
+    function finalizePending() {
+      if (!pending) return;
+      var st = snapshot();
+      pending.life1 = st.life1; pending.hand1 = st.hand1;
+      pending.life2 = st.life2; pending.hand2 = st.hand2;
+      rows.push(pending);
+      pending = null;
+    }
+
+    lines.forEach(function (raw) {
+      var line = clean(raw);
+      if (!line) return;
+      var m = line.match(/^RZ1\|PLY\|([12])\|(.+?)\|/);
+      if (m) { if (m[1] === "1") p1 = m[2].trim(); else p2 = m[2].trim(); return; }
+      if (/^RZ1\|/.test(line)) return;
+
+      m = line.match(/^\[(.+?)\] (.*)$/);
+      if (!m) {
+        if (/^Attack Fails/i.test(line) && actions.length && actions[actions.length - 1].indexOf("⚔") === 0) {
+          actions[actions.length - 1] += "×";
+        }
+        return;
+      }
+      var p = m[1].trim(), body = m[2];
+
+      var lm = body.match(/^Leader is (.+?) \[/);
+      if (lm) { leaders[p] = lm[1].trim(); if (!p1) p1 = p; else if (!p2 && p !== p1) p2 = p; return; }
+      lm = body.match(/^Chose to go (First|Second)/);
+      if (lm) { firstPlayer = (lm[1] === "First") ? p : null; if (!firstPlayer && p1 && p2) firstPlayer = (p === p1 ? p2 : p1); return; }
+      if (/Concedes!/.test(body)) { if (p1 && p2) winner = other(p); finalizePending(); return; }
+
+      lm = body.match(/^Life: (\d+)/);
+      if (lm) { life[p] = +lm[1]; return; }
+      lm = body.match(/^Hand: \[(.*)\]$/);
+      if (lm) { hand[p] = lm[1] ? lm[1].split(",").length : 0; return; }
+
+      if (/^End Turn$/.test(body)) {
+        if (!turnOwner) turnOwner = p;
+        pending = { no: turnNo, owner: turnOwner, actions: actions.slice() };
+        actions = [];
+        turnNo++;
+        turnOwner = (p1 && p2) ? other(p) : null;
+        return;
+      }
+
+      // End Turn後のダンプが終わったら行を確定
+      if (pending && !isDump(body)) finalizePending();
+
+      if (!firstPlayer && !turnOwner) return; // セットアップ中は無視
+      if (!turnOwner) turnOwner = firstPlayer;
+
+      lm = body.match(/^Deploy (.+?) \[/);
+      if (lm && p === turnOwner) { actions.push("▶ " + lm[1].trim()); return; }
+      lm = body.match(/^(.+?) \[[^\]]*\] attacking (.+?) \[/);
+      if (lm) { actions.push("⚔ " + lm[1].trim() + "→" + lm[2].trim()); return; }
+    });
+    finalizePending();
+
+    if (!p1 || !p2) return null;
+    if (!firstPlayer) firstPlayer = rows.length ? rows[0].owner : p1;
+    return { p1: p1, p2: p2, leaders: leaders, first: firstPlayer, winner: winner, rows: rows };
+  }
+
+  function renderLogView() {
+    var el = $("#logView");
+    if (!lvData) { el.innerHTML = ""; return; }
+    var d = lvData;
+    var meName = (lvMe === 1) ? d.p1 : d.p2;
+    var h = '<div class="lv-meta">' +
+      '<span class="lv-chip">P1 <b>' + esc(d.leaders[d.p1] || "?") + '</b>（' + esc(d.p1) + '）</span>' +
+      '<span class="lv-chip">P2 <b>' + esc(d.leaders[d.p2] || "?") + '</b>（' + esc(d.p2) + '）</span>' +
+      '<span class="lv-chip">先攻 <b>' + esc(d.first) + '</b></span>' +
+      (d.winner ? '<span class="lv-chip win">勝者 <b>' + esc(d.winner) + '</b></span>' : '') +
+      '<span class="lv-chip"><b>' + d.rows.length + '</b> ターン</span>' +
+    '</div>';
+    h += '<span class="lbl" style="display:block;margin-bottom:5px;">自分はどちら？</span>' +
+      '<div class="seg-choice two neutral" style="margin-bottom:12px;">' +
+        '<input type="radio" name="lv-me" id="lv-me1" value="1"' + (lvMe === 1 ? " checked" : "") + '><label for="lv-me1">' + esc(d.p1) + '</label>' +
+        '<input type="radio" name="lv-me" id="lv-me2" value="2"' + (lvMe === 2 ? " checked" : "") + '><label for="lv-me2">' + esc(d.p2) + '</label>' +
+      '</div>';
+    h += d.rows.map(function (r) {
+      var mine = r.owner === meName;
+      var myL = (lvMe === 1) ? r.life1 : r.life2, myH = (lvMe === 1) ? r.hand1 : r.hand2;
+      var opL = (lvMe === 1) ? r.life2 : r.life1, opH = (lvMe === 1) ? r.hand2 : r.hand1;
+      var acts = r.actions.length
+        ? r.actions.map(function (a) { return esc(a).replace(/×$/, '<span class="fail">×</span>'); }).join("、 ")
+        : '<span class="fail">（行動なし）</span>';
+      return '<div class="lv-row ' + (mine ? "me" : "opp") + '">' +
+        '<span class="t">T' + r.no + '</span>' +
+        '<span class="who">' + (mine ? "自分" : "相手") + '</span>' +
+        '<div class="acts">' + acts + '</div>' +
+        '<div class="lh">自分 L<b>' + fmtN(myL) + '</b> H<b>' + fmtN(myH) + '</b><br>相手 L<b>' + fmtN(opL) + '</b> H<b>' + fmtN(opH) + '</b></div>' +
+      '</div>';
+    }).join("");
+    // 取り込みUI
+    var mySide = (meName === d.first) ? "first" : "second";
+    var myLeaderLog = d.leaders[meName] || "リーダー";
+    var oppName = (lvMe === 1) ? d.p2 : d.p1;
+    var oppLeaderLog = d.leaders[oppName] || "対面";
+    var pages = notebookLeaders();
+    var pageOpts = pages.map(function (n) { return '<option value="' + esc(n) + '"' + (n === lvPage ? " selected" : "") + '>' + esc(n) + '</option>'; }).join("") +
+      '<option value="__log__"' + (lvPage === "__log__" ? " selected" : "") + '>新規ページ: ' + esc(myLeaderLog) + '</option>';
+    var secNames = [];
+    if (lvPage && lvPage !== "__log__" && notebooks[lvPage]) {
+      secNames = (notebooks[lvPage].sections || []).map(function (x) { return x.opponent; }).filter(Boolean);
+    }
+    var oppOpts = secNames.map(function (n) { return '<option value="' + esc(n) + '"' + (n === lvOpp ? " selected" : "") + '>' + esc(n) + '</option>'; }).join("") +
+      '<option value="__log__"' + (lvOpp === "__log__" || !secNames.length ? " selected" : "") + '>新規対面: ' + esc(oppLeaderLog) + '</option>';
+    h += '<div style="border-top:1px dashed var(--line);margin-top:12px;padding-top:12px;">' +
+      '<span class="lbl">この進行表をプランに取り込む（' + (mySide === "first" ? "先攻" : "後攻") + 'プランとして・自分のターンのみ）</span>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:10px;">' +
+        '<select id="lv-page">' + pageOpts + '</select>' +
+        '<select id="lv-opp">' + oppOpts + '</select>' +
+      '</div>' +
+      '<button type="button" class="btn btn-primary" id="lv-import">プランへ取り込む</button>' +
+    '</div>';
+    el.innerHTML = h;
+
+    el.querySelectorAll('input[name="lv-me"]').forEach(function (r) {
+      r.addEventListener("change", function () { lvMe = +this.value; lvPage = ""; lvOpp = ""; renderLogView(); });
+    });
+    $("#lv-page").addEventListener("change", function () { lvPage = this.value; lvOpp = ""; renderLogView(); });
+    $("#lv-opp").addEventListener("change", function () { lvOpp = this.value; });
+    $("#lv-import").addEventListener("click", function () { importLogPlan(mySide, myLeaderLog, oppLeaderLog, meName); });
+  }
+  function fmtN(v) { return (v === undefined || v === null) ? "–" : v; }
+
+  function importLogPlan(side, myLeaderLog, oppLeaderLog, meName) {
+    var pageSel = $("#lv-page").value, oppSel = $("#lv-opp").value;
+    var pageName = (pageSel === "__log__" || !pageSel) ? myLeaderLog : pageSel;
+    var oppNameSec = (oppSel === "__log__" || !oppSel) ? oppLeaderLog : oppSel;
+    var nb = notebooks[pageName] || (notebooks[pageName] = { common: { points: [], saved: false }, sections: [] });
+    nb.sections = nb.sections || [];
+    var sec = nb.sections.find(function (x) { return x.opponent === oppNameSec; });
+    if (!sec) { sec = { id: uid(), opponent: oppNameSec, turnChoice: "", mulligan: "", points: [], saved: false }; nb.sections.push(sec); }
+    var myRows = lvData.rows.filter(function (r) { return r.owner === meName; });
+    var newPlan = myRows.map(function (r) {
+      var myL = (lvMe === 1) ? r.life1 : r.life2, myH = (lvMe === 1) ? r.hand1 : r.hand2;
+      return { plan: r.actions.join("、"), life: fmtN(myL) === "–" ? "" : String(myL), hand: fmtN(myH) === "–" ? "" : String(myH) };
+    });
+    var plans = ensurePlans(sec);
+    var existing = plans[side].some(function (r) { return (r.plan && r.plan.trim()) || r.life || r.hand; });
+    if (existing && !confirm("「" + pageName + "」vs「" + oppNameSec + "」の" + (side === "first" ? "先攻" : "後攻") + "プランを上書きします。よろしいですか？")) return;
+    plans[side] = newPlan;
+    saveNotebooks();
+    currentMemoLeader = pageName;
+    renderMemo();
+    toast("進行表を取り込みました（" + newPlan.length + "ターン）");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  $("#logLoadBtn").addEventListener("click", function () { $("#logFile").click(); });
+  $("#logFile").addEventListener("change", function (e) {
+    var file = e.target.files && e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function () {
+      var d = parseCombatLog(String(reader.result));
+      if (!d || !d.rows.length) { toast("ログを解析できませんでした"); e.target.value = ""; return; }
+      lvData = d; lvMe = 1; lvPage = ""; lvOpp = "";
+      renderLogView();
+      toast("進行表を描画しました（" + d.rows.length + "ターン）");
+      e.target.value = "";
+    };
+    reader.readAsText(file);
   });
 
   /* ---------- export / import ---------- */
