@@ -335,29 +335,29 @@
   .btn-add:hover { color: var(--accent); border-color: var(--accent); }
   .btn-addsec { margin-top: 2px; padding: 13px; font-size: 14px; }
 
-  /* 進行表（複数パターン・自分/相手の動き） */
+  /* 進行表（複数パターン・先/後の交互ターン） */
   .pat { border: 1px solid var(--line-soft); background: #0b111d; padding: 10px; margin-bottom: 10px; }
   .pat-head { display: flex; gap: 6px; align-items: center; margin-bottom: 9px; }
-  .pat-head .pat-side { flex: none; width: 124px; }
-  .pat-head .pat-side label { padding: 8px 2px; font-size: 11.5px; }
   .pat-head .pat-title { flex: 1; min-width: 0; font-size: 12.5px; padding: 9px 10px; }
   .plan-cols { font-size: 8.5px; font-weight: 900; letter-spacing: .08em; color: #3d4a5f; margin: 2px 0 7px; }
   .plrow { border-top: 1px solid var(--line-soft); padding-top: 7px; margin-bottom: 7px; }
   .plr-line { display: flex; gap: 6px; align-items: center; margin-bottom: 6px; }
-  .plt { flex: none; width: 30px; font-size: 11px; font-weight: 900; color: var(--accent); font-variant-numeric: tabular-nums; }
-  .plo { flex: none; width: 30px; font-size: 9px; font-weight: 900; color: var(--muted); letter-spacing: .04em; }
+  .plr-stats { padding-left: 36px; }
+  .plt { flex: none; width: 30px; font-size: 11px; font-weight: 900; font-variant-numeric: tabular-nums; }
+  .plt.fst { color: var(--accent); }
+  .plt.sec { color: var(--gold); }
+  .plo { flex: none; font-size: 9px; font-weight: 900; color: var(--muted); letter-spacing: .04em; }
   .pl-do { flex: 1; min-width: 0; font-size: 12.5px; padding: 9px 10px; }
-  .pl-n { flex: none; width: 42px; text-align: center; font-size: 12.5px; padding: 9px 2px; font-variant-numeric: tabular-nums; }
+  .pl-n { flex: none; width: 46px; text-align: center; font-size: 12.5px; padding: 9px 2px; font-variant-numeric: tabular-nums; }
   .pl-x { flex: none; appearance: none; border: 0; background: transparent; color: var(--muted); font-size: 14px; cursor: pointer; padding: 5px 6px; line-height: 1; }
   .pl-x:hover { color: var(--loss); }
   .vplan { width: 100%; border-collapse: collapse; margin-top: 2px; }
-  .vplan th { font-size: 8.5px; font-weight: 900; letter-spacing: .1em; color: #3d4a5f; text-align: left; padding: 2px 6px 4px 0; }
-  .vplan th.num, .vplan td.num { text-align: center; width: 34px; }
-  .vplan td { font-size: 12px; color: #c6d2e2; line-height: 1.5; padding: 5px 6px 5px 0; border-top: 1px solid var(--line-soft); vertical-align: top; font-variant-numeric: tabular-nums; }
-  .vplan td.plt { color: var(--accent); font-weight: 900; width: 28px; white-space: nowrap; }
-  .vplan td.vopp { color: var(--muted-2); }
+  .vplan th { font-size: 8.5px; font-weight: 900; letter-spacing: .06em; color: #3d4a5f; text-align: left; padding: 2px 4px 4px 0; }
+  .vplan th.num, .vplan td.num { text-align: center; width: 26px; }
+  .vplan td { font-size: 12px; color: #c6d2e2; line-height: 1.5; padding: 5px 4px 5px 0; border-top: 1px solid var(--line-soft); vertical-align: top; font-variant-numeric: tabular-nums; }
+  .vplan td.plt { font-weight: 900; width: 30px; white-space: nowrap; }
+  .vplan td.vopp { color: var(--muted); }
   .plan-side { font-size: 10px; font-weight: 900; letter-spacing: .1em; color: #07090f; background: var(--accent); display: inline-block; padding: 2px 8px; margin-bottom: 6px; clip-path: polygon(4px 0,100% 0,calc(100% - 4px) 100%,0 100%); }
-  .plan-side.second { background: var(--gold); }
   .msec.common { border-color: var(--gold-dim); background: linear-gradient(180deg, #131007 0%, var(--surface) 45%); }
   .msec.common .oppo-name { color: var(--gold); letter-spacing: .1em; }
   /* saved (read-only) section */
@@ -1335,24 +1335,40 @@
     '</div>';
   }
 
-  // 進行表: s.plans = [ {id, title, side:"first"|"second", rows:[{me,opp,life,hand}]} ]（複数パターン）
+  // 進行表: s.plans = [ {id, title, rows:[{move,myLife,myHand,oppLife,oppHand}]} ]（複数パターン）
+  // 行は先攻/後攻が交互（index 0=先1, 1=後1, 2=先2, 3=後2 …）
+  function normPlanRow(r) {
+    if (!r || typeof r !== "object") return { move: "", myLife: "", myHand: "", oppLife: "", oppHand: "" };
+    if ("move" in r || "myLife" in r) {
+      return { move: r.move || "", myLife: r.myLife || "", myHand: r.myHand || "", oppLife: r.oppLife || "", oppHand: r.oppHand || "" };
+    }
+    // 旧形式 {me,opp,life,hand} からの移行
+    var mv = r.me || "";
+    if (r.opp) mv = mv ? (mv + " ／ 相手:" + r.opp) : ("相手:" + r.opp);
+    return { move: mv, myLife: r.life || "", myHand: r.hand || "", oppLife: "", oppHand: "" };
+  }
   function ensurePlans(s) {
-    if (Array.isArray(s.plans)) return s.plans;
     var arr = [];
-    if (s.plans && typeof s.plans === "object") {
-      // 旧形式 {first:[{plan,life,hand}], second:[...]} からの移行
+    if (Array.isArray(s.plans)) {
+      arr = s.plans.map(function (p) {
+        return { id: p.id || uid(), title: p.title || "", rows: (p.rows || []).map(normPlanRow) };
+      });
+    } else if (s.plans && typeof s.plans === "object") {
+      // 最古形式 {first:[{plan,life,hand}], second:[...]}
       ["first", "second"].forEach(function (side) {
         var old = s.plans[side] || [];
-        if (old.length) arr.push({ id: uid(), title: "", side: side, rows: old.map(function (r) { return { me: r.plan || "", opp: "", life: r.life || "", hand: r.hand || "" }; }) });
+        if (old.length) arr.push({ id: uid(), title: side === "second" ? "後攻" : "先攻", rows: old.map(normPlanRow) });
       });
     }
     s.plans = arr;
     return s.plans;
   }
   function findPattern(s, pid) { return ensurePlans(s).find(function (x) { return x.id === pid; }); }
-  function sideLabel(side) { return side === "second" ? "後攻" : "先攻"; }
+  function turnMark(i) { return (i % 2 === 0) ? "先" : "後"; }
+  function turnLabel(i) { return turnMark(i) + (Math.floor(i / 2) + 1); }
+  function rowHasContent(r) { return (r.move && r.move.trim()) || r.myLife || r.myHand || r.oppLife || r.oppHand; }
   function patHasContent(p) {
-    return !!(p.title && p.title.trim()) || (p.rows || []).some(function (r) { return (r.me && r.me.trim()) || (r.opp && r.opp.trim()) || r.life || r.hand; });
+    return !!(p.title && p.title.trim()) || (p.rows || []).some(rowHasContent);
   }
   function buildPlanEditor(s) {
     var pats = ensurePlans(s);
@@ -1360,28 +1376,26 @@
     h += pats.map(function (p) {
       return '<div class="pat" data-pat="' + p.id + '">' +
         '<div class="pat-head">' +
-          '<div class="seg-choice two neutral pat-side">' +
-            '<input type="radio" name="ps-' + p.id + '" id="ps-' + p.id + '-f" value="first" data-field="pat-side"' + (p.side !== "second" ? ' checked' : '') + '>' +
-            '<label for="ps-' + p.id + '-f">先攻</label>' +
-            '<input type="radio" name="ps-' + p.id + '" id="ps-' + p.id + '-s" value="second" data-field="pat-side"' + (p.side === "second" ? ' checked' : '') + '>' +
-            '<label for="ps-' + p.id + '-s">後攻</label>' +
-          '</div>' +
           '<input type="text" class="pat-title" data-field="pat-title" value="' + esc(p.title || "") + '" placeholder="パターン名（例: 基本 / 相手が速攻型）">' +
           '<button type="button" class="msec-act del" data-act="delpat" aria-label="このパターンを削除">✕</button>' +
         '</div>' +
-        ((p.rows || []).length ? '<div class="plan-cols">T=ターン ／ L・H=ターン終了時のライフ・手札</div>' : '') +
+        ((p.rows || []).length ? '<div class="plan-cols">動き ／ 自分L・H ／ 相手L・H（ターン終了時）</div>' : '') +
         (p.rows || []).map(function (r, i) {
           return '<div class="plrow">' +
-            '<div class="plr-line"><span class="plt">T' + (i + 1) + '</span>' +
-              '<input type="text" class="pl-do" data-field="plan-me" data-i="' + i + '" value="' + esc(r.me || "") + '" placeholder="自分の動き">' +
+            '<div class="plr-line"><span class="plt ' + (i % 2 ? "sec" : "fst") + '">' + turnLabel(i) + '</span>' +
+              '<input type="text" class="pl-do" data-field="plan-move" data-i="' + i + '" value="' + esc(r.move || "") + '" placeholder="このターンの動き">' +
               '<button type="button" class="pl-x" data-act="delplan" data-i="' + i + '" aria-label="この行を削除">✕</button></div>' +
-            '<div class="plr-line"><span class="plo">相手</span>' +
-              '<input type="text" class="pl-do" data-field="plan-opp" data-i="' + i + '" value="' + esc(r.opp || "") + '" placeholder="相手の動き（想定）">' +
-              '<input type="text" class="pl-n" data-field="plan-life" data-i="' + i + '" value="' + esc(r.life || "") + '" placeholder="L" inputmode="numeric">' +
-              '<input type="text" class="pl-n" data-field="plan-hand" data-i="' + i + '" value="' + esc(r.hand || "") + '" placeholder="H" inputmode="numeric"></div>' +
+            '<div class="plr-line plr-stats">' +
+              '<span class="plo">自分</span>' +
+              '<input type="text" class="pl-n" data-field="plan-myl" data-i="' + i + '" value="' + esc(r.myLife || "") + '" placeholder="L" inputmode="numeric">' +
+              '<input type="text" class="pl-n" data-field="plan-myh" data-i="' + i + '" value="' + esc(r.myHand || "") + '" placeholder="H" inputmode="numeric">' +
+              '<span class="plo">相手</span>' +
+              '<input type="text" class="pl-n" data-field="plan-opl" data-i="' + i + '" value="' + esc(r.oppLife || "") + '" placeholder="L" inputmode="numeric">' +
+              '<input type="text" class="pl-n" data-field="plan-oph" data-i="' + i + '" value="' + esc(r.oppHand || "") + '" placeholder="H" inputmode="numeric">' +
+            '</div>' +
           '</div>';
         }).join("") +
-        '<button type="button" class="btn-add" data-act="addplan">＋ ターンを追加</button>' +
+        '<button type="button" class="btn-add" data-act="addplan">＋ ' + turnLabel((p.rows || []).length) + ' を追加</button>' +
       '</div>';
     }).join("");
     h += '<button type="button" class="btn-add" data-act="addpat">＋ 進行表パターンを追加</button></div>';
@@ -1392,10 +1406,12 @@
     if (!pats.length) return '';
     return pats.map(function (p) {
       return '<div class="view-field">' +
-        '<span class="plan-side' + (p.side === "second" ? " second" : "") + '">' + sideLabel(p.side) + (p.title && p.title.trim() ? " ─ " + esc(p.title) : "") + '</span>' +
-        '<table class="vplan"><tr><th></th><th>自分の動き</th><th>相手の動き</th><th class="num">L</th><th class="num">H</th></tr>' +
+        '<span class="plan-side">' + (p.title && p.title.trim() ? esc(p.title) : "進行表") + '</span>' +
+        '<table class="vplan"><tr><th></th><th>動き</th><th class="num">自L</th><th class="num">自H</th><th class="num">相L</th><th class="num">相H</th></tr>' +
         (p.rows || []).map(function (r, i) {
-          return '<tr><td class="plt">T' + (i + 1) + '</td><td>' + esc(r.me || "") + '</td><td class="vopp">' + esc(r.opp || "") + '</td><td class="num">' + esc(r.life || "–") + '</td><td class="num">' + esc(r.hand || "–") + '</td></tr>';
+          return '<tr><td class="plt ' + (i % 2 ? "sec" : "fst") + '">' + turnLabel(i) + '</td><td>' + esc(r.move || "") + '</td>' +
+            '<td class="num">' + esc(r.myLife || "–") + '</td><td class="num">' + esc(r.myHand || "–") + '</td>' +
+            '<td class="num vopp">' + esc(r.oppLife || "–") + '</td><td class="num vopp">' + esc(r.oppHand || "–") + '</td></tr>';
         }).join("") +
         '</table></div>';
     }).join("");
@@ -1539,7 +1555,7 @@
     else if (act === "savesec") { s.points = (s.points || []).filter(function (p) { return p && p.trim(); }); s.saved = true; saveNotebooks(); renderMemoPage(); toast("保存しました"); }
     else if (act === "editsec") { s.saved = false; saveNotebooks(); renderMemoPage(); }
     else if (act === "addpat") {
-      ensurePlans(s).push({ id: uid(), title: "", side: "first", rows: [] });
+      ensurePlans(s).push({ id: uid(), title: "", rows: [] });
       saveNotebooks(); renderMemoPage();
     }
     else if (act === "delpat") {
@@ -1553,17 +1569,16 @@
       var apEl = btn.closest("[data-pat]"); if (!apEl) return;
       var ap = findPattern(s, apEl.dataset.pat); if (!ap) return;
       ap.rows = ap.rows || [];
-      ap.rows.push({ me: "", opp: "", life: "", hand: "" });
+      ap.rows.push({ move: "", myLife: "", myHand: "", oppLife: "", oppHand: "" });
       saveNotebooks(); renderMemoPage();
-      var rowsEl = $("#memoBody").querySelectorAll('[data-pat="' + ap.id + '"] [data-field="plan-me"]');
+      var rowsEl = $("#memoBody").querySelectorAll('[data-pat="' + ap.id + '"] [data-field="plan-move"]');
       if (rowsEl.length) rowsEl[rowsEl.length - 1].focus();
     }
     else if (act === "delplan") {
       var dlEl = btn.closest("[data-pat]"); if (!dlEl) return;
       var dl = findPattern(s, dlEl.dataset.pat); if (!dl) return;
       var di = +btn.dataset.i, target = (dl.rows || [])[di];
-      var hasContent = target && ((target.me && target.me.trim()) || (target.opp && target.opp.trim()) || target.life || target.hand);
-      if (hasContent && !confirm("T" + (di + 1) + " の行を削除しますか？")) return;
+      if (target && rowHasContent(target) && !confirm(turnLabel(di) + " の行を削除しますか？")) return;
       dl.rows.splice(di, 1);
       saveNotebooks(); renderMemoPage();
     }
@@ -1581,15 +1596,16 @@
       if (!tp) return;
       tp.title = t.value;
     }
-    else if (field === "plan-me" || field === "plan-opp" || field === "plan-life" || field === "plan-hand") {
+    else if (field === "plan-move" || field === "plan-myl" || field === "plan-myh" || field === "plan-opl" || field === "plan-oph") {
       var ppEl = t.closest("[data-pat]"); var pp = ppEl && findPattern(s, ppEl.dataset.pat);
       if (!pp) return;
       var prow = (pp.rows || [])[+t.dataset.i];
       if (!prow) return;
-      if (field === "plan-me") prow.me = t.value;
-      else if (field === "plan-opp") prow.opp = t.value;
-      else if (field === "plan-life") prow.life = t.value.trim();
-      else prow.hand = t.value.trim();
+      if (field === "plan-move") prow.move = t.value;
+      else if (field === "plan-myl") prow.myLife = t.value.trim();
+      else if (field === "plan-myh") prow.myHand = t.value.trim();
+      else if (field === "plan-opl") prow.oppLife = t.value.trim();
+      else prow.oppHand = t.value.trim();
     }
     else return;
     saveNotebooks();
@@ -1599,11 +1615,6 @@
     var secEl = t.closest("[data-sec]"); if (!secEl) return;
     var s = findSection(secEl.dataset.sec); if (!s) return;
     if (field === "turn") { s.turnChoice = t.value; saveNotebooks(); }
-    else if (field === "pat-side") {
-      var psEl = t.closest("[data-pat]"); var ps = psEl && findPattern(s, psEl.dataset.pat);
-      if (!ps) return;
-      ps.side = t.value; saveNotebooks();
-    }
     else if (field === "opponent") {
       var inp = secEl.querySelector('[data-field="opponent-new"]');
       if (t.value === "__new__") { if (inp) { inp.style.display = "block"; inp.value = ""; inp.focus(); } s.opponent = ""; }
