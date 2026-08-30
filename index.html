@@ -441,6 +441,18 @@
           </label>
 
           <label class="field">
+            <span class="lbl">環境<span style="font-weight:600;color:var(--muted)">（任意）</span></span>
+            <select id="f-env-sel"></select>
+            <input type="text" id="f-env-new" class="leader-new" placeholder="新しい環境名を入力" autocomplete="off" style="display:none;">
+          </label>
+
+          <label class="field">
+            <span class="lbl">大会名<span style="font-weight:600;color:var(--muted)">（任意）</span></span>
+            <select id="f-tour-sel"></select>
+            <input type="text" id="f-tour-new" class="leader-new" placeholder="新しい大会名を入力" autocomplete="off" style="display:none;">
+          </label>
+
+          <label class="field">
             <span class="lbl">使用リーダー（自分）</span>
             <select id="f-my-sel"></select>
             <input type="text" id="f-my-new" class="leader-new" placeholder="新しいリーダー名を入力" autocomplete="off" style="display:none;">
@@ -652,6 +664,16 @@
         <input type="date" id="ed-date" required>
       </label>
       <label class="field">
+        <span class="lbl">環境<span style="font-weight:600;color:var(--muted)">（任意）</span></span>
+        <select id="ed-env-sel"></select>
+        <input type="text" id="ed-env-new" class="leader-new" placeholder="新しい環境名を入力" autocomplete="off" style="display:none;">
+      </label>
+      <label class="field">
+        <span class="lbl">大会名<span style="font-weight:600;color:var(--muted)">（任意）</span></span>
+        <select id="ed-tour-sel"></select>
+        <input type="text" id="ed-tour-new" class="leader-new" placeholder="新しい大会名を入力" autocomplete="off" style="display:none;">
+      </label>
+      <label class="field">
         <span class="lbl">使用リーダー（自分）</span>
         <select id="ed-my-sel"></select>
         <input type="text" id="ed-my-new" class="leader-new" placeholder="新しいリーダー名を入力" autocomplete="off" style="display:none;">
@@ -785,24 +807,47 @@
 
   // Fill a form leader <select> with past leaders (よく選ぶ順) + "new" option. role: 'my'/'opp'.
   function fillLeaderCombo(selId, newId, selVal, role) {
+    fillComboWith(selId, newId, leadersByFreq(role), selVal, "リーダー");
+  }
+  function refreshLeaderCombos(myVal, oppVal) {
+    fillLeaderCombo("#f-my-sel", "#f-my-new", myVal, "my");
+    fillLeaderCombo("#f-opp-sel", "#f-opp-new", oppVal, "opp");
+  }
+  // 記録の任意フィールド（環境・大会名など）を、使用回数が多い順に並べる
+  function fieldValuesByFreq(field) {
+    var cnt = {};
+    records.forEach(function (r) { if (r[field]) cnt[r[field]] = (cnt[r[field]] || 0) + 1; });
+    return Object.keys(cnt).sort(function (a, b) {
+      var d = cnt[b] - cnt[a];
+      return d ? d : a.localeCompare(b, "ja");
+    });
+  }
+  // その記録フィールドで最後に入力された値（最新の記録から遡って最初に見つかったもの）
+  function mostRecentValue(field) {
+    for (var i = records.length - 1; i >= 0; i--) { if (records[i][field]) return records[i][field]; }
+    return "";
+  }
+  // <select>を候補リスト + 「＋新規入力」で埋める共通処理
+  function fillComboWith(selId, newId, names, selVal, label) {
     var sel = $(selId), inp = $(newId);
-    var names = leadersByFreq(role);
     var html = '<option value="">— 選択してください —</option>';
     html += names.map(function (n) { return '<option value="' + esc(n) + '">' + esc(n) + '</option>'; }).join("");
-    html += '<option value="__new__">＋ 新しいリーダーを入力…</option>';
+    html += '<option value="__new__">＋ 新しい' + label + 'を入力…</option>';
     sel.innerHTML = html;
     if (selVal && names.indexOf(selVal) >= 0) {
       sel.value = selVal; inp.style.display = "none"; inp.value = "";
     } else if (names.length === 0) {
-      // first-time use: no history yet, go straight to text entry
       sel.value = "__new__"; inp.style.display = "block";
     } else {
       sel.value = ""; inp.style.display = "none"; inp.value = "";
     }
   }
-  function refreshLeaderCombos(myVal, oppVal) {
-    fillLeaderCombo("#f-my-sel", "#f-my-new", myVal, "my");
-    fillLeaderCombo("#f-opp-sel", "#f-opp-new", oppVal, "opp");
+  function fillTagCombo(selId, newId, field, selVal) {
+    fillComboWith(selId, newId, fieldValuesByFreq(field), selVal, field === "tournament" ? "大会名" : "環境名");
+  }
+  function refreshTagCombos(prefix, envVal, tourVal) {
+    fillTagCombo("#" + prefix + "-env-sel", "#" + prefix + "-env-new", "environment", envVal);
+    fillTagCombo("#" + prefix + "-tour-sel", "#" + prefix + "-tour-new", "tournament", tourVal);
   }
   function bindCombo(selId, newId) {
     $(selId).addEventListener("change", function () {
@@ -813,8 +858,12 @@
   }
   bindCombo("#f-my-sel", "#f-my-new");
   bindCombo("#f-opp-sel", "#f-opp-new");
+  bindCombo("#f-env-sel", "#f-env-new");
+  bindCombo("#f-tour-sel", "#f-tour-new");
   bindCombo("#ed-my-sel", "#ed-my-new");
   bindCombo("#ed-opp-sel", "#ed-opp-new");
+  bindCombo("#ed-env-sel", "#ed-env-new");
+  bindCombo("#ed-tour-sel", "#ed-tour-new");
   function comboValue(selId, newId) {
     var sel = $(selId);
     return (sel.value === "__new__") ? $(newId).value.trim() : sel.value;
@@ -828,6 +877,8 @@
     var rec = {
       id: uid(),
       date: $("#f-date").value,
+      environment: comboValue("#f-env-sel", "#f-env-new"),
+      tournament: comboValue("#f-tour-sel", "#f-tour-new"),
       myLeader: comboValue("#f-my-sel", "#f-my-new"),
       oppLeader: comboValue("#f-opp-sel", "#f-opp-new"),
       jankenWon: document.querySelector('input[name="janken"]:checked').value === "win",
@@ -869,7 +920,8 @@
   function resetForm() {
     $("#f-memo").value = "";
     $("#f-point").value = "";
-    refreshLeaderCombos();
+    refreshLeaderCombos(mostRecentValue("myLeader"));
+    refreshTagCombos("f", mostRecentValue("environment"), mostRecentValue("tournament"));
     $("#jk-win").checked = true; $("#t-first").checked = true; $("#r-win").checked = true;
     $("#f-date").value = todayStr();
   }
@@ -881,6 +933,8 @@
     if (!r) return;
     $("#ed-id").value = r.id;
     $("#ed-date").value = r.date;
+    fillTagCombo("#ed-env-sel", "#ed-env-new", "environment", r.environment);
+    fillTagCombo("#ed-tour-sel", "#ed-tour-new", "tournament", r.tournament);
     fillLeaderCombo("#ed-my-sel", "#ed-my-new", r.myLeader, "my");
     fillLeaderCombo("#ed-opp-sel", "#ed-opp-new", r.oppLeader, "opp");
     document.querySelector('input[name="ed-janken"][value="' + (r.jankenWon ? "win" : "lose") + '"]').checked = true;
@@ -911,6 +965,8 @@
     records[i] = {
       id: id,
       date: $("#ed-date").value,
+      environment: comboValue("#ed-env-sel", "#ed-env-new"),
+      tournament: comboValue("#ed-tour-sel", "#ed-tour-new"),
       myLeader: my,
       oppLeader: opp,
       jankenWon: document.querySelector('input[name="ed-janken"]:checked').value === "win",
@@ -1661,6 +1717,7 @@
     var mode = hasData ? (confirm("現在のデータに読み込んだ内容を追加しますか？\n\n「キャンセル」を選ぶと、現在のデータを置き換えます。") ? "merge" : "replace") : "replace";
     var clean = incoming.filter(function (r) { return r && r.myLeader && r.oppLeader; }).map(function (r) {
       return { id: r.id || uid(), date: r.date || todayStr(), myLeader: r.myLeader, oppLeader: r.oppLeader,
+        environment: r.environment || "", tournament: r.tournament || "",
         jankenWon: !!r.jankenWon, turn: r.turn === "second" ? "second" : "first",
         result: r.result === "loss" ? "loss" : "win", memo: r.memo || "", point: r.point || "" };
     });
@@ -1773,7 +1830,7 @@
   function setSyncStatus(t) { var el = $("#syncStatus"); if (el) el.textContent = t; }
 
   function rerenderActive() {
-    refreshLeaderCombos(); updateCounts();
+    refreshLeaderCombos(); refreshTagCombos("f"); updateCounts();
     var b = document.querySelector('nav.tabs button[aria-selected="true"]');
     var v = b ? b.dataset.view : "record";
     if (v === "history") renderRecent();
@@ -1937,7 +1994,8 @@
   });
 
   /* ---------- init ---------- */
-  refreshLeaderCombos();
+  refreshLeaderCombos(mostRecentValue("myLeader"));
+  refreshTagCombos("f", mostRecentValue("environment"), mostRecentValue("tournament"));
   renderRecent();
   updateCounts();
   if (syncOn()) startSync();
